@@ -22,7 +22,7 @@ export const signup = async (req: Request, res: Response) => {
 
 		await User.create({ name, email, password: hashedPassword });
 
-		res.status(200).json({
+		res.status(201).json({
 			message: "signup successfully",
 		});
 	} catch (error) {
@@ -37,18 +37,17 @@ export const singin = async (req: Request, res: Response) => {
 		if (!email || !password) {
 			throw new Error("No email or password was given");
 		}
-		// first check if there is user in the db
 
 		const user = await User.findOne({ email });
 
 		if (!user) {
-			throw new Error("incorret email or password");
+			throw new Error("Incorrect email or password");
 		}
 		// check the hashedPassword
 		const isMatch = await Bun.password.verify(password, user.password);
 
 		if (!isMatch) {
-			throw new Error("password or Email incoorect");
+			throw new Error("Incorrect email or password");
 		}
 		// prepare the jwt
 
@@ -67,7 +66,7 @@ export const singin = async (req: Request, res: Response) => {
 			maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days in milliseconds
 		});
 
-		res.status(201).json({
+		res.status(200).json({
 			_id: user._id,
 			name: user.name,
 			email: user.email,

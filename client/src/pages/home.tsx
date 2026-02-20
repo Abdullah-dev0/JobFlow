@@ -26,6 +26,13 @@ const Home = () => {
 							}>
 							About
 						</NavLink>
+						<NavLink
+							to="/login"
+							className={({ isActive }) =>
+								`transition-colors ${isActive ? "text-white" : "text-slate-300 hover:text-white"}`
+							}>
+							Login
+						</NavLink>
 					</nav>
 				</div>
 			</header>
@@ -34,46 +41,46 @@ const Home = () => {
 				{/* Hero */}
 				<section className="flex flex-col gap-10 md:flex-row md:items-center">
 					<div className="md:w-1/2 space-y-6">
-					<p className="inline-flex items-center gap-2 rounded-full border border-slate-700 bg-slate-900 px-3 py-1 text-xs font-medium text-slate-200">
-						<span className="h-1.5 w-1.5 rounded-full bg-emerald-300" />
-						Designed for real-world job hunting
-					</p>
-					<h1 className="text-3xl md:text-5xl font-semibold tracking-tight text-slate-50">
-						Track every application.
-						<br />
-						<span className="text-slate-200">See where you stand.</span>
-					</h1>
-					<p className="max-w-xl text-sm md:text-base text-slate-300 leading-relaxed">
-						JobFlow is your command center for job hunting. Register or log in, add roles you&apos;ve applied for, and
-						follow them from applied, to interviews, to offer—or learn quickly when it&apos;s a no.
-					</p>
-					<div className="flex flex-wrap gap-3 pt-2">
-						<button className="rounded-full bg-white px-5 py-2.5 text-sm font-semibold text-slate-950 shadow-lg shadow-slate-900/60 transition hover:bg-slate-100">
-							Get started – Register
-						</button>
-						<button className="rounded-full border border-slate-700 bg-slate-900 px-5 py-2.5 text-sm font-medium text-slate-100 transition hover:border-slate-500 hover:bg-slate-900/80">
-							I already have an account
-						</button>
-					</div>
-					<ul className="mt-4 grid gap-2 text-sm text-slate-300">
-						<li className="flex items-start gap-2">
-							<span className="mt-1 h-1.5 w-1.5 rounded-full bg-slate-200" />
-							<p>
-								Track each job by status: <span className="font-semibold text-slate-100">applied</span>,{" "}
-								<span className="font-semibold text-slate-100">interview</span>,{" "}
-								<span className="font-semibold text-slate-100">offer</span>, or{" "}
-								<span className="font-semibold text-slate-100">rejected</span>.
-							</p>
-						</li>
-						<li className="flex items-start gap-2">
-							<span className="mt-1 h-1.5 w-1.5 rounded-full bg-slate-200" />
-							<p>See a simple dashboard with how many roles are in each stage.</p>
-						</li>
-						<li className="flex items-start gap-2">
-							<span className="mt-1 h-1.5 w-1.5 rounded-full bg-slate-200" />
-							<p>Reflect on your pipeline instead of guessing where your time is going.</p>
-						</li>
-					</ul>
+						<p className="inline-flex items-center gap-2 rounded-full border border-slate-700 bg-slate-900 px-3 py-1 text-xs font-medium text-slate-200">
+							<span className="h-1.5 w-1.5 rounded-full bg-emerald-300" />
+							Designed for real-world job hunting
+						</p>
+						<h1 className="text-3xl md:text-5xl font-semibold tracking-tight text-slate-50">
+							Track every application.
+							<br />
+							<span className="text-slate-200">See where you stand.</span>
+						</h1>
+						<p className="max-w-xl text-sm md:text-base text-slate-300 leading-relaxed">
+							JobFlow is your command center for job hunting. Register or log in, add roles you&apos;ve applied for, and
+							follow them from applied, to interviews, to offer—or learn quickly when it&apos;s a no.
+						</p>
+						<div className="flex flex-wrap gap-3 pt-2">
+							<button className="rounded-full bg-white px-5 py-2.5 text-sm font-semibold text-slate-950 shadow-lg shadow-slate-900/60 transition hover:bg-slate-100">
+								Get started – Register
+							</button>
+							<button className="rounded-full border border-slate-700 bg-slate-900 px-5 py-2.5 text-sm font-medium text-slate-100 transition hover:border-slate-500 hover:bg-slate-900/80">
+								I already have an account
+							</button>
+						</div>
+						<ul className="mt-4 grid gap-2 text-sm text-slate-300">
+							<li className="flex items-start gap-2">
+								<span className="mt-1 h-1.5 w-1.5 rounded-full bg-slate-200" />
+								<p>
+									Track each job by status: <span className="font-semibold text-slate-100">applied</span>,{" "}
+									<span className="font-semibold text-slate-100">interview</span>,{" "}
+									<span className="font-semibold text-slate-100">offer</span>, or{" "}
+									<span className="font-semibold text-slate-100">rejected</span>.
+								</p>
+							</li>
+							<li className="flex items-start gap-2">
+								<span className="mt-1 h-1.5 w-1.5 rounded-full bg-slate-200" />
+								<p>See a simple dashboard with how many roles are in each stage.</p>
+							</li>
+							<li className="flex items-start gap-2">
+								<span className="mt-1 h-1.5 w-1.5 rounded-full bg-slate-200" />
+								<p>Reflect on your pipeline instead of guessing where your time is going.</p>
+							</li>
+						</ul>
 					</div>
 
 					<div className="md:w-1/2">
@@ -118,8 +125,7 @@ const Home = () => {
 						<div className="md:max-w-sm">
 							<h2 className="text-xl font-semibold text-slate-50">How JobFlow fits your search</h2>
 							<p className="mt-2 text-sm text-slate-300">
-								Think of this as a focused CRM for your job hunt. No spreadsheets, no guessing what
-								happened last week.
+								Think of this as a focused CRM for your job hunt. No spreadsheets, no guessing what happened last week.
 							</p>
 						</div>
 						<ol className="grid flex-1 gap-4 text-sm md:grid-cols-3">
@@ -127,24 +133,22 @@ const Home = () => {
 								<p className="text-xs font-semibold uppercase tracking-[0.15em] text-slate-400">Step 1</p>
 								<p className="mt-2 font-medium text-slate-50">Register & set your baseline</p>
 								<p className="mt-1 text-xs text-slate-300">
-									Create an account and add the roles you&apos;ve already applied to so your dashboard
-									starts with reality, not zero.
+									Create an account and add the roles you&apos;ve already applied to so your dashboard starts with
+									reality, not zero.
 								</p>
 							</li>
 							<li className="rounded-2xl border border-slate-800 bg-slate-900 p-4">
 								<p className="text-xs font-semibold uppercase tracking-[0.15em] text-slate-400">Step 2</p>
 								<p className="mt-2 font-medium text-slate-50">Log each new application</p>
 								<p className="mt-1 text-xs text-slate-300">
-									For every job, save the company, role, link, and status so nothing falls through the
-									cracks.
+									For every job, save the company, role, link, and status so nothing falls through the cracks.
 								</p>
 							</li>
 							<li className="rounded-2xl border border-slate-800 bg-slate-900 p-4">
 								<p className="text-xs font-semibold uppercase tracking-[0.15em] text-slate-400">Step 3</p>
 								<p className="mt-2 font-medium text-slate-50">Watch your pipeline in one view</p>
 								<p className="mt-1 text-xs text-slate-300">
-									Use the dashboard to see how many roles are at applied, interview, offer, and rejected
-									at a glance.
+									Use the dashboard to see how many roles are at applied, interview, offer, and rejected at a glance.
 								</p>
 							</li>
 						</ol>
@@ -157,16 +161,16 @@ const Home = () => {
 						<div className="md:max-w-sm">
 							<h2 className="text-xl font-semibold text-slate-50">Built for your next move</h2>
 							<p className="mt-2 text-sm text-slate-300">
-								This tracker is intentionally simple: just the information you need to make better
-								decisions about where to apply next.
+								This tracker is intentionally simple: just the information you need to make better decisions about where
+								to apply next.
 							</p>
 						</div>
 						<div className="grid flex-1 gap-4 text-sm md:grid-cols-2">
 							<div className="rounded-2xl border border-slate-800 bg-slate-900 p-4">
 								<p className="font-medium text-slate-50">See progress, not just rejections</p>
 								<p className="mt-1 text-xs text-slate-300">
-									Even when the answer is &quot;no&quot;, your pipeline shows how many opportunities
-									you&apos;re actively creating.
+									Even when the answer is &quot;no&quot;, your pipeline shows how many opportunities you&apos;re
+									actively creating.
 								</p>
 							</div>
 							<div className="rounded-2xl border border-slate-800 bg-slate-900 p-4">
