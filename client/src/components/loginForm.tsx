@@ -2,11 +2,11 @@ import { Eye, EyeOff, Lock, Mail } from "lucide-react";
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-import { useMutation } from "../hooks/useMutation ";
+import { useMutation } from "../hooks/useMutation";
 import Button from "./button";
 import Input from "./input";
 
-interface signinRes {
+interface SignInResponse {
 	_id: string;
 	name: string;
 	email: string;
@@ -14,7 +14,7 @@ interface signinRes {
 
 export default function LoginForm() {
 	const [showPassword, setShowPassword] = useState(false);
-	const { mutate, error, loading } = useMutation<signinRes>("auth/signin", "POST");
+	const { mutate, error, loading } = useMutation<SignInResponse>("auth/signin", "POST");
 	const navigate = useNavigate();
 	const [formData, setFormData] = useState({
 		email: "",
@@ -34,7 +34,7 @@ export default function LoginForm() {
 		}
 		try {
 			await mutate({ email, password });
-			navigate("/", { replace: true });
+			navigate("/dashboard", { replace: true });
 		} catch {
 			toast.error(error?.message ?? "There was an error");
 		}

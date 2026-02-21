@@ -168,3 +168,104 @@
     @apply bg-background text-foreground;
   }
 }
+
+@keyframes loader-orbit {
+  0% {
+    transform: rotate(0deg) translateX(24px) rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg) translateX(24px) rotate(-360deg);
+  }
+}
+
+@keyframes loader-progress {
+  0% {
+    transform: translateX(-60%);
+    width: 35%;
+  }
+  50% {
+    transform: translateX(75%);
+    width: 45%;
+  }
+  100% {
+    transform: translateX(-60%);
+    width: 35%;
+  }
+}
+
+@keyframes loader-pulse {
+  0%,
+  100% {
+    opacity: 0.45;
+    transform: scale(0.95);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes loader-shift {
+  0% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+  100% {
+    transform: translateY(0px);
+  }
+}
+
+.jobflow-loader__ambient {
+  background:
+    radial-gradient(
+      50% 45% at 20% 20%,
+      color-mix(in oklch, var(--primary) 26%, var(--background)),
+      transparent
+    ),
+    radial-gradient(
+      45% 45% at 82% 72%,
+      color-mix(in oklch, var(--secondary) 88%, var(--primary) 12%),
+      transparent
+    ),
+    linear-gradient(
+      180deg,
+      color-mix(in oklch, var(--background) 90%, var(--secondary) 10%),
+      var(--background)
+    );
+}
+
+.jobflow-loader__halo {
+  background: radial-gradient(
+    circle,
+    color-mix(in oklch, var(--primary) 28%, var(--background)),
+    transparent 70%
+  );
+  filter: blur(6px);
+}
+
+.jobflow-loader__icon-wrap {
+  position: relative;
+  animation: loader-shift 2.8s ease-in-out infinite;
+}
+
+.jobflow-loader__orbit {
+  position: absolute;
+  top: calc(50% - 3px);
+  left: calc(50% - 3px);
+  height: 6px;
+  width: 6px;
+  border-radius: 999px;
+  background: var(--primary);
+  transform-origin: center;
+  animation: loader-orbit 2.2s linear infinite;
+}
+
+.jobflow-loader__progress {
+  animation: loader-progress 1.8s ease-in-out infinite;
+}
+
+.jobflow-loader__dot {
+  animation: loader-pulse 1.5s ease-in-out infinite;
+}

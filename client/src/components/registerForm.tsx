@@ -2,7 +2,7 @@ import { Eye, EyeOff, Lock, Mail, User } from "lucide-react";
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-import { useMutation } from "../hooks/useMutation ";
+import { useMutation } from "../hooks/useMutation";
 import Button from "./button";
 import Input from "./input";
 

@@ -1,16 +1,24 @@
 import { Routes, Route } from "react-router-dom";
-import Home from "./pages/home";
-import About from "./pages/about";
-import Login from "./pages/login";
-import Register from "./pages/register";
+import Home from "./pages/Home";
+import About from "./pages/About";
+import Login from "./pages/Login";
+import Register from "./pages/Register";
+import Dashboard from "./pages/Dashboard";
+import ProtectedRoute from "./routes/ProtectedRoute";
+import PublicRoute from "./routes/PublicRoute";
 
 export default function App() {
 	return (
 		<Routes>
 			<Route path="/" element={<Home />} />
 			<Route path="/about" element={<About />} />
-			<Route path="/login" element={<Login />} />
-			<Route path="/register" element={<Register />} />
+			<Route element={<PublicRoute />}>
+				<Route path="/login" element={<Login />} />
+				<Route path="/register" element={<Register />} />
+			</Route>
+			<Route element={<ProtectedRoute />}>
+				<Route path="/dashboard" element={<Dashboard />} />
+			</Route>
 		</Routes>
 	);
 }
