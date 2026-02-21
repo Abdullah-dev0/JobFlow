@@ -6,9 +6,15 @@ import { useMutation } from "../hooks/useMutation ";
 import Button from "./button";
 import Input from "./input";
 
+interface signinRes {
+	_id: string;
+	name: string;
+	email: string;
+}
+
 export default function LoginForm() {
 	const [showPassword, setShowPassword] = useState(false);
-	const { mutate, error, loading } = useMutation("auth/signin", "POST");
+	const { mutate, error, loading } = useMutation<signinRes>("auth/signin", "POST");
 	const navigate = useNavigate();
 	const [formData, setFormData] = useState({
 		email: "",

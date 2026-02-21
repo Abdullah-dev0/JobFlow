@@ -16,7 +16,7 @@ export const createJob = async (req: AuthRequest, res: Response) => {
 			status,
 			dateApplied,
 			notes,
-			createdBy: req.user.id,
+			createdBy: req.user.userId,
 		});
 
 		return res.status(201).json(job);
@@ -58,7 +58,7 @@ export const deleteJob = async (req: AuthRequest, res: Response) => {
 		return res.status(401).json({ message: "No token, unauthorized" });
 	}
 	const { id } = req.params;
-	console.log(id, req.user.id);
+
 	try {
 		const result = await Job.findOneAndDelete({ _id: id, createdBy: req.user.userId });
 		if (!result) {

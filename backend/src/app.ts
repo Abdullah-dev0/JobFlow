@@ -6,6 +6,7 @@ import cookieParser from "cookie-parser";
 import jobRouter from "./routes/job.route";
 import { authenticate } from "./middleware";
 import cors from "cors";
+import userRouter from "./routes/user.route";
 
 export const app = express();
 
@@ -24,6 +25,7 @@ app.use(morgan("dev"));
 
 app.use("/api/auth", authRouter);
 app.use("/api/job", authenticate, jobRouter);
+app.use("/api/user", authenticate, userRouter);
 
 app.get("/", (_req, res) => {
 	res.json({ message: "Job Application Tracker API is running" });

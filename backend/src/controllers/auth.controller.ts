@@ -51,7 +51,7 @@ export const singin = async (req: Request, res: Response) => {
 		}
 		// prepare the jwt
 
-		const payload = { userId: user.id, email: user.email, id: user.id };
+		const payload = { userId: user.id, email: user.email };
 
 		const JWT_SECRET = process.env.JWT_SECRET || "dev-secret-change-me";
 
