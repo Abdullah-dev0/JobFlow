@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "bun --hot src/index.ts",
     "start": "bun index.ts",
-    "seed": "bun run src/scripts/seed.ts"
+    "seed": "bun run src/scripts/seed.ts",
+    "seed:user-jobs": "bun run src/scripts/seed-user-jobs.ts"
   },
   "devDependencies": {
     "@types/bun": "latest"

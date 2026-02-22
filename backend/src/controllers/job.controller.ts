@@ -44,10 +44,32 @@ export const getJobs = async (req: AuthRequest, res: Response) => {
 	if (!req.user) {
 		return res.status(401).json({ message: "No token, unauthorized" });
 	}
+
+	const page = parseInt(req.query.page as string) ?? 1;
+	const limit = parseInt(req.query.limit as string) ?? 10;
+
+	const skip = (page - 1) * limit;
+
 	try {
 		const filter = { createdBy: req.user.userId };
-		const [jobs, total] = await Promise.all([Job.find(filter).sort({ createdAt: -1 }), Job.countDocuments(filter)]);
-		return res.status(200).json({ jobs, total });
+		const [jobs, total] = await Promise.all([
+			Job.find(filter).skip(skip).limit(limit).sort({ createdAt: -1 }),
+			Job.countDocuments(filter),
+		]);
+
+		const allJobs = jobs.map((job) => ({
+			id: String(job._id),
+			company: job.company,
+			role: job.role,
+			status: job.status,
+			dateApplied: job.dateApplied,
+			notes: job.notes,
+			createdAt: job.createdAt,
+		}));
+
+		console.log(allJobs);
+
+		return res.status(200).json({ allJobs, total });
 	} catch (error) {
 		return res.status(500).json({ message: error instanceof Error ? error.message : "Failed to fetch jobs" });
 	}
