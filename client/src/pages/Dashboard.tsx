@@ -41,7 +41,7 @@ const Dashboard = () => {
 			}
 		};
 
-		void loadJobs();
+		loadJobs();
 	}, [fetchData]);
 
 	const totalPages = Math.max(1, Math.ceil((data?.total ?? 0) / limit));
