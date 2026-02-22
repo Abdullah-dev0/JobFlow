@@ -39,7 +39,7 @@ const Dashboard = () => {
 	const params = `job/All?${queryParams.toString()}`;
 	const { fetchData, data, loading } = useFetch<GetJobsResponse>(params);
 	const skeletonRowCount = Math.min(Math.max(LIMIT, 5), 10);
-	const { mutate, loading: isLoading } = useMutation<{ message: string }, { id: string }>("/job/delete", "DELETE");
+	const { mutate, loading: isDeleting } = useMutation<{ message: string }, { id: string }>("/job/delete", "DELETE");
 
 	useEffect(() => {
 		const loadJobs = async () => {
@@ -121,7 +121,7 @@ const Dashboard = () => {
 								</div>
 								<span className="text-sm font-medium text-foreground">Jobs You Have Applied</span>
 							</div>
-							<span className="text-sm text-muted-foreground">{data?.total} Jobs applied</span>
+							<span className="text-sm text-muted-foreground">{data?.total ?? 0} Jobs applied</span>
 						</div>
 
 						{/* Filter row */}
@@ -211,7 +211,7 @@ const Dashboard = () => {
 												</td>
 											</tr>
 										))}
-									{!loading && data?.allJobs.length === 0 && (
+									{!loading && (data?.allJobs.length ?? 0) === 0 && (
 										<tr>
 											<td colSpan={6} className="px-5 py-10 text-center text-muted-foreground">
 												No jobs found.
@@ -246,9 +246,10 @@ const Dashboard = () => {
 													<td className="px-3 py-3.5">
 														<button
 															type="button"
+															disabled={isDeleting}
 															onClick={() => deleteJob(job.id)}
 															aria-label={`Delete job application for ${job.company} ${job.role}`}
-															className="inline-flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground transition-colors hover:text-destructive cursor-pointer">
+															className="inline-flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground transition-colors hover:text-destructive cursor-pointer disabled:cursor-not-allowed disabled:opacity-50">
 															<Trash2 color="red" size={16} />
 														</button>
 													</td>
@@ -263,7 +264,7 @@ const Dashboard = () => {
 						<div className="flex items-center justify-between px-5 py-3.5 border-t border-border">
 							<button
 								onClick={() => setPage(page - 1)}
-								disabled={page === 1 || loading || isLoading}
+								disabled={page === 1 || loading}
 								className="flex items-center gap-1.5 px-3 py-1.5 text-sm text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg transition-colors cursor-pointer disabled:opacity-50 disabled:pointer-events-none">
 								<ChevronLeft size={14} />
 								Previous
@@ -278,7 +279,7 @@ const Dashboard = () => {
 										<button
 											key={item}
 											onClick={() => setPage(item)}
-											disabled={isLoading || loading}
+											disabled={loading}
 											className={`w-8 h-8 rounded-lg text-sm font-medium transition-colors cursor-pointer ${
 												item === page
 													? "bg-foreground text-background"
@@ -291,7 +292,7 @@ const Dashboard = () => {
 							</div>
 							<button
 								onClick={() => setPage(page + 1)}
-								disabled={page === totalPages || loading || isLoading}
+								disabled={page === totalPages || loading}
 								className="flex items-center gap-1.5 px-3 py-1.5 text-sm text-foreground bg-muted hover:bg-muted/80 rounded-lg transition-colors cursor-pointer disabled:opacity-50 disabled:pointer-events-none">
 								Next
 								<ArrowRight size={14} />
