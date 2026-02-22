@@ -6,6 +6,7 @@ import Sidebar from "../components/Sidebar";
 import useFetch from "../hooks/useFetch";
 import type { GetJobsResponse } from "../types/dashboard";
 import { formatDate, getDisplayStatus, getPaginationRange, StatusBadge as getStatusBadgeStyles } from "../utils";
+import { filters, LIMIT } from "../constants";
 
 function StatusBadge({ label }: { label: string }) {
 	const badgeStyles = getStatusBadgeStyles(label);
@@ -25,10 +26,10 @@ const Dashboard = () => {
 	const [searchParams, setSearchParams] = useSearchParams();
 	const rawPage = Number(searchParams.get("page") ?? "1");
 	const page = Number.isNaN(rawPage) || rawPage < 1 ? 1 : rawPage;
-	const limit = 10;
-	const params = `job/All?page=${page}&limit=${limit}`;
+	const status = searchParams.get("status");
+	const params = `job/All?page=${page}&limit=${LIMIT}&status${status}`;
 	const { fetchData, data, loading } = useFetch<GetJobsResponse>(params);
-	const skeletonRowCount = Math.min(Math.max(limit, 5), 10);
+	const skeletonRowCount = Math.min(Math.max(LIMIT, 5), 10);
 
 	useEffect(() => {
 		const loadJobs = async () => {
@@ -43,7 +44,8 @@ const Dashboard = () => {
 		loadJobs();
 	}, [fetchData]);
 
-	const totalPages = Math.max(1, Math.ceil((data?.total ?? 0) / limit));
+	const totalPages = Math.max(1, Math.ceil((data?.total ?? 0) / LIMIT));
+
 	const paginationRange = getPaginationRange(page, totalPages);
 
 	return (
@@ -97,9 +99,12 @@ const Dashboard = () => {
 						{/* Tabs + search row */}
 						<div className="flex items-center justify-between px-5 py-3 border-b border-border gap-4">
 							<div className="flex items-center gap-1">
-								{["All", "Pending", "Shortlisted", "Rejected"].map((tab, index) => (
+								{filters.map((tab, index) => (
 									<button
 										key={tab}
+										onClick={() => {
+											setSearchParams({ status: tab });
+										}}
 										className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors cursor-pointer ${
 											index === 0
 												? "bg-foreground text-background"
@@ -126,10 +131,10 @@ const Dashboard = () => {
 											Date Applied
 										</th>
 										<th className="text-left px-3 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-											Status
+											Date
 										</th>
 										<th className="text-left px-3 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-											Stage
+											Status
 										</th>
 										<th className="w-12 px-3 py-3" />
 									</tr>
