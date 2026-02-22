@@ -21,16 +21,15 @@ function StatusBadge({ label }: { label: string }) {
 	);
 }
 
-// ── Main Dashboard ─────────────────────────────────────────────────────────
-
 const Dashboard = () => {
-	const [searchParams] = useSearchParams();
+	const [searchParams, setSearchParams] = useSearchParams();
 	const rawPage = Number(searchParams.get("page") ?? "1");
 	const rawLimit = Number(searchParams.get("limit") ?? "10");
 	const page = Number.isNaN(rawPage) || rawPage < 1 ? 1 : rawPage;
 	const limit = Number.isNaN(rawLimit) || rawLimit < 1 ? 10 : rawLimit;
 	const params = `job/All?page=${page}&limit=${limit}`;
-	const { fetchData, data } = useFetch<GetJobsResponse>(params);
+	const { fetchData, data, loading } = useFetch<GetJobsResponse>(params);
+	const skeletonRowCount = Math.min(Math.max(limit, 5), 10);
 
 	useEffect(() => {
 		fetchData()
@@ -130,44 +129,77 @@ const Dashboard = () => {
 									</tr>
 								</thead>
 								<tbody>
-									{data?.allJobs.length === 0 && (
+									{loading &&
+										Array.from({ length: skeletonRowCount }).map((_, index) => (
+											<tr key={`skeleton-${index}`} className="border-b border-border last:border-0">
+												<td className="pl-5 py-3.5">
+													<div aria-hidden className="h-4 w-4 rounded bg-muted animate-pulse" />
+												</td>
+												<td className="py-3.5">
+													<div className="flex items-center gap-3">
+														<div aria-hidden className="w-8 h-8 rounded-lg bg-muted animate-pulse shrink-0" />
+														<div className="space-y-2">
+															<div aria-hidden className="h-3 w-28 rounded bg-muted animate-pulse" />
+															<div aria-hidden className="h-3 w-20 rounded bg-muted/80 animate-pulse" />
+														</div>
+													</div>
+												</td>
+												<td className="px-3 py-3.5">
+													<div aria-hidden className="h-3 w-32 rounded bg-muted animate-pulse" />
+												</td>
+												<td className="px-3 py-3.5">
+													<div aria-hidden className="h-3 w-24 rounded bg-muted animate-pulse" />
+												</td>
+												<td className="px-3 py-3.5">
+													<div aria-hidden className="h-3 w-20 rounded bg-muted animate-pulse" />
+												</td>
+												<td className="px-3 py-3.5">
+													<div aria-hidden className="h-6 w-24 rounded-full bg-muted animate-pulse" />
+												</td>
+												<td className="px-3 py-3.5">
+													<div aria-hidden className="h-3 w-6 rounded bg-muted animate-pulse" />
+												</td>
+											</tr>
+										))}
+									{!loading && data?.allJobs.length === 0 && (
 										<tr>
 											<td colSpan={7} className="px-5 py-10 text-center text-muted-foreground">
 												No jobs found.
 											</td>
 										</tr>
 									)}
-									{data?.allJobs.map((job) => {
-										const display = getDisplayStatus(job.status);
-										return (
-											<tr
-												key={job.id}
-												className="border-b border-border last:border-0 hover:bg-muted/40 transition-colors">
-												<td className="pl-5 py-3.5">
-													<input type="checkbox" className="rounded accent-primary" />
-												</td>
-												<td className=" py-3.5">
-													<div className="flex items-center gap-3">
-														<div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center text-xs font-bold text-muted-foreground shrink-0">
-															{job.company.slice(0, 2).toUpperCase()}
+									{!loading &&
+										data?.allJobs.map((job) => {
+											const display = getDisplayStatus(job.status);
+											return (
+												<tr
+													key={job.id}
+													className="border-b border-border last:border-0 hover:bg-muted/40 transition-colors">
+													<td className="pl-5 py-3.5">
+														<input type="checkbox" className="rounded accent-primary" />
+													</td>
+													<td className=" py-3.5">
+														<div className="flex items-center gap-3">
+															<div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center text-xs font-bold text-muted-foreground shrink-0">
+																{job.company.slice(0, 2).toUpperCase()}
+															</div>
+															<div>
+																<p className="font-medium text-foreground">{job.company}</p>
+															</div>
 														</div>
-														<div>
-															<p className="font-medium text-foreground">{job.company}</p>
-														</div>
-													</div>
-												</td>
-												<td className="px-3 py-3.5 text-foreground">{job.role}</td>
-												<td className="px-3 py-3.5 text-muted-foreground">{formatDate(job.dateApplied)}</td>
-												<td className="px-3 py-3.5">
-													<span className="text-sm text-muted-foreground">{job.status}</span>
-												</td>
-												<td className="px-3 py-3.5">
-													<StatusBadge label={display.label} />
-												</td>
-												<td className="px-3 py-3.5">{/* <RowActions /> */}</td>
-											</tr>
-										);
-									})}
+													</td>
+													<td className="px-3 py-3.5 text-foreground">{job.role}</td>
+													<td className="px-3 py-3.5 text-muted-foreground">{formatDate(job.dateApplied)}</td>
+													<td className="px-3 py-3.5">
+														<span className="text-sm text-muted-foreground">{job.status}</span>
+													</td>
+													<td className="px-3 py-3.5">
+														<StatusBadge label={display.label} />
+													</td>
+													<td className="px-3 py-3.5">{/* <RowActions /> */}</td>
+												</tr>
+											);
+										})}
 								</tbody>
 							</table>
 						</div>
@@ -175,7 +207,8 @@ const Dashboard = () => {
 						{/* Pagination */}
 						<div className="flex items-center justify-between px-5 py-3.5 border-t border-border">
 							<button
-								disabled={page === 1}
+								onClick={() => setSearchParams({ page: String(page - 1), limit: String(limit) })}
+								disabled={page === 1 || loading}
 								className="flex items-center gap-1.5 px-3 py-1.5 text-sm text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg transition-colors cursor-pointer disabled:opacity-50 disabled:pointer-events-none">
 								<ChevronLeft size={14} />
 								Previous
@@ -189,6 +222,7 @@ const Dashboard = () => {
 									) : (
 										<button
 											key={item}
+											onClick={() => setSearchParams({ page: String(item), limit: String(limit) })}
 											className={`w-8 h-8 rounded-lg text-sm font-medium transition-colors cursor-pointer ${
 												item === page
 													? "bg-foreground text-background"
@@ -200,7 +234,8 @@ const Dashboard = () => {
 								)}
 							</div>
 							<button
-								disabled={page === totalPages}
+								onClick={() => setSearchParams({ page: String(page + 1), limit: String(limit) })}
+								disabled={page === totalPages || loading}
 								className="flex items-center gap-1.5 px-3 py-1.5 text-sm text-foreground bg-muted hover:bg-muted/80 rounded-lg transition-colors cursor-pointer disabled:opacity-50 disabled:pointer-events-none">
 								Next
 								<ArrowRight size={14} />

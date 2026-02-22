@@ -6,7 +6,6 @@ export default function useFetch<TResponse>(url: string) {
 
 	const fetchData = useCallback(async () => {
 		setLoading(true);
-		setData(undefined);
 
 		try {
 			const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/${url}`, {
