@@ -1,4 +1,4 @@
-import { ArrowRight, Bell, Briefcase, ChevronLeft, ChevronRight, Search } from "lucide-react";
+import { ArrowRight, Bell, Briefcase, ChevronDown, ChevronLeft, ChevronRight, Search } from "lucide-react";
 import { useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
@@ -23,11 +23,18 @@ function StatusBadge({ label }: { label: string }) {
 }
 
 const Dashboard = () => {
+	const ALL_STATUSES = "All";
 	const [searchParams, setSearchParams] = useSearchParams();
 	const rawPage = Number(searchParams.get("page") ?? "1");
 	const page = Number.isNaN(rawPage) || rawPage < 1 ? 1 : rawPage;
-	const status = searchParams.get("status");
-	const params = `job/All?page=${page}&limit=${LIMIT}&status${status}`;
+	const statusParam = searchParams.get("status");
+	const selectedStatus = statusParam ?? ALL_STATUSES;
+	const queryParams = new URLSearchParams({
+		page: String(page),
+		limit: String(LIMIT),
+		...(statusParam ? { status: statusParam } : {}),
+	});
+	const params = `job/All?${queryParams.toString()}`;
 	const { fetchData, data, loading } = useFetch<GetJobsResponse>(params);
 	const skeletonRowCount = Math.min(Math.max(LIMIT, 5), 10);
 
@@ -47,6 +54,14 @@ const Dashboard = () => {
 	const totalPages = Math.max(1, Math.ceil((data?.total ?? 0) / LIMIT));
 
 	const paginationRange = getPaginationRange(page, totalPages);
+
+	const setPage = (nextPage: number) => {
+		setSearchParams((prevParams) => {
+			const nextParams = new URLSearchParams(prevParams);
+			nextParams.set("page", String(nextPage));
+			return nextParams;
+		});
+	};
 
 	return (
 		<div className="flex h-screen bg-background overflow-hidden">
@@ -96,23 +111,37 @@ const Dashboard = () => {
 							<span className="text-sm text-muted-foreground">{data?.total} Jobs applied</span>
 						</div>
 
-						{/* Tabs + search row */}
+						{/* Filter row */}
 						<div className="flex items-center justify-between px-5 py-3 border-b border-border gap-4">
-							<div className="flex items-center gap-1">
-								{filters.map((tab, index) => (
-									<button
-										key={tab}
-										onClick={() => {
-											setSearchParams({ status: tab });
+							<div className="flex items-center gap-2">
+								<div className="relative">
+									<select
+										value={selectedStatus}
+										onChange={(event) => {
+											setSearchParams((prevParams) => {
+												const nextParams = new URLSearchParams(prevParams);
+												if (event.target.value === ALL_STATUSES) {
+													nextParams.delete("status");
+												} else {
+													nextParams.set("status", event.target.value);
+												}
+												nextParams.set("page", "1");
+												return nextParams;
+											});
 										}}
-										className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors cursor-pointer ${
-											index === 0
-												? "bg-foreground text-background"
-												: "text-muted-foreground hover:bg-muted hover:text-foreground"
-										}`}>
-										{tab}
-									</button>
-								))}
+										className="appearance-none min-w-44 rounded-lg border border-border bg-muted/50 px-3 py-2 pr-9 text-sm font-medium text-foreground shadow-sm outline-none transition-all hover:bg-muted focus:border-primary/60 focus:ring-2 focus:ring-primary/20">
+										<option value={ALL_STATUSES}>{ALL_STATUSES}</option>
+										{filters.map((option) => (
+											<option key={option} value={option}>
+												{option}
+											</option>
+										))}
+									</select>
+									<ChevronDown
+										size={16}
+										className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+									/>
+								</div>
 							</div>
 						</div>
 
@@ -136,7 +165,6 @@ const Dashboard = () => {
 										<th className="text-left px-3 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wide">
 											Status
 										</th>
-										<th className="w-12 px-3 py-3" />
 									</tr>
 								</thead>
 								<tbody>
@@ -206,9 +234,6 @@ const Dashboard = () => {
 													<td className="px-3 py-3.5 text-foreground">{job.role}</td>
 													<td className="px-3 py-3.5 text-muted-foreground">{formatDate(job.dateApplied)}</td>
 													<td className="px-3 py-3.5">
-														<span className="text-sm text-muted-foreground">{job.status}</span>
-													</td>
-													<td className="px-3 py-3.5">
 														<StatusBadge label={display.label} />
 													</td>
 													<td className="px-3 py-3.5">{/* <RowActions /> */}</td>
@@ -222,7 +247,7 @@ const Dashboard = () => {
 						{/* Pagination */}
 						<div className="flex items-center justify-between px-5 py-3.5 border-t border-border">
 							<button
-								onClick={() => setSearchParams({ page: String(page - 1) })}
+								onClick={() => setPage(page - 1)}
 								disabled={page === 1 || loading}
 								className="flex items-center gap-1.5 px-3 py-1.5 text-sm text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg transition-colors cursor-pointer disabled:opacity-50 disabled:pointer-events-none">
 								<ChevronLeft size={14} />
@@ -237,7 +262,7 @@ const Dashboard = () => {
 									) : (
 										<button
 											key={item}
-											onClick={() => setSearchParams({ page: String(item) })}
+											onClick={() => setPage(item)}
 											className={`w-8 h-8 rounded-lg text-sm font-medium transition-colors cursor-pointer ${
 												item === page
 													? "bg-foreground text-background"
@@ -249,7 +274,7 @@ const Dashboard = () => {
 								)}
 							</div>
 							<button
-								onClick={() => setSearchParams({ page: String(page + 1) })}
+								onClick={() => setPage(page + 1)}
 								disabled={page === totalPages || loading}
 								className="flex items-center gap-1.5 px-3 py-1.5 text-sm text-foreground bg-muted hover:bg-muted/80 rounded-lg transition-colors cursor-pointer disabled:opacity-50 disabled:pointer-events-none">
 								Next
