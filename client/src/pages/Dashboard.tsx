@@ -1,5 +1,9 @@
+import { useAuth } from "../context/authContext";
+
 const Dashboard = () => {
-	return <div>Dashboard</div>;
+	const { user } = useAuth();
+
+	return <div>{JSON.stringify(user, null, 2)}</div>;
 };
 
 export default Dashboard;

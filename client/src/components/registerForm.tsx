@@ -112,7 +112,7 @@ export default function RegisterForm() {
 				}
 			/>
 
-			<Button disabled={loading} type="submit">
+			<Button disabled={loading} loading={loading} loadingText="Signing up..." type="submit">
 				Sign Up
 			</Button>
 		</form>

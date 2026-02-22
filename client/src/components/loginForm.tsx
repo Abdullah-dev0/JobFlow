@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { useMutation } from "../hooks/useMutation";
 import Button from "./button";
 import Input from "./input";
+import { useAuth } from "../context/authContext";
 
 interface SignInResponse {
 	_id: string;
@@ -14,8 +15,9 @@ interface SignInResponse {
 
 export default function LoginForm() {
 	const [showPassword, setShowPassword] = useState(false);
-	const { mutate, error, loading } = useMutation<SignInResponse>("auth/signin", "POST");
+	const { mutate, loading } = useMutation<SignInResponse>("auth/signin", "POST");
 	const navigate = useNavigate();
+	const { setUser } = useAuth();
 	const [formData, setFormData] = useState({
 		email: "",
 		password: "",
@@ -33,10 +35,11 @@ export default function LoginForm() {
 			return;
 		}
 		try {
-			await mutate({ email, password });
+			const signedInUser = await mutate({ email: String(email), password: String(password) });
+			setUser({ id: signedInUser._id, name: signedInUser.name, email: signedInUser.email });
 			navigate("/dashboard", { replace: true });
-		} catch {
-			toast.error(error?.message ?? "There was an error");
+		} catch (error) {
+			toast.error(error instanceof Error ? error.message : "There was an error");
 		}
 	};
 
@@ -82,7 +85,7 @@ export default function LoginForm() {
 				</Link>
 			</div>
 
-			<Button disabled={loading} type="submit">
+			<Button disabled={loading} loading={loading} loadingText="Logging in..." type="submit">
 				Log In
 			</Button>
 		</form>

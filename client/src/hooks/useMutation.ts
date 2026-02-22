@@ -1,14 +1,16 @@
 import { useState } from "react";
 
+type ErrorPayload = {
+	message?: string;
+};
+
 export function useMutation<TResponse, TBody = unknown>(url: string, method: "POST" | "PUT" | "DELETE" | "PATCH") {
 	const [data, setData] = useState<TResponse | undefined>();
 	const [loading, setLoading] = useState(false);
-	const [error, setError] = useState<Error | null>(null);
 
-	async function mutate(body?: TBody) {
+	async function mutate(body?: TBody): Promise<TResponse> {
 		setLoading(true);
 		setData(undefined);
-		setError(null);
 
 		try {
 			const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/${url}`, {
@@ -18,21 +20,27 @@ export function useMutation<TResponse, TBody = unknown>(url: string, method: "PO
 				body: body ? JSON.stringify(body) : undefined,
 			});
 
-			const result = await res.json().catch(() => ({}));
-
 			if (!res.ok) {
-				throw new Error(result?.message || `Request failed (${res.status})`);
+				const errorPayload: ErrorPayload = await res.json().catch(() => ({}));
+				throw new Error(errorPayload?.message || `Request failed (${res.status})`);
+			}
+
+			const result: TResponse | null = await res.json().catch(() => null);
+
+			if (result === null) {
+				throw new Error("Invalid server response");
 			}
 
 			setData(result);
+			return result;
 		} catch (err) {
 			const errorObj = err instanceof Error ? err : new Error(String(err));
-			setError(errorObj);
+
 			throw errorObj;
 		} finally {
 			setLoading(false);
 		}
 	}
 
-	return { data, loading, error, mutate };
+	return { data, loading, mutate };
 }
