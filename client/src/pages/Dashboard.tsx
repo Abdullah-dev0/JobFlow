@@ -5,17 +5,17 @@ import { toast } from "sonner";
 import Sidebar from "../components/Sidebar";
 import useFetch from "../hooks/useFetch";
 import type { GetJobsResponse } from "../types/dashboard";
-import { formatDate, getDisplayStatus, getPaginationRange, StatusBadge as status } from "../utils";
+import { formatDate, getDisplayStatus, getPaginationRange, StatusBadge as getStatusBadgeStyles } from "../utils";
 
 function StatusBadge({ label }: { label: string }) {
-	const res = status(label);
+	const badgeStyles = getStatusBadgeStyles(label);
 
 	return (
 		<span
 			className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${
-				res.style ?? "bg-muted text-muted-foreground"
+				badgeStyles.style ?? "bg-muted text-muted-foreground"
 			}`}>
-			<span className={`w-1.5 h-1.5 rounded-full ${res.dotStyle ?? "bg-muted-foreground"}`} />
+			<span className={`w-1.5 h-1.5 rounded-full ${badgeStyles.dotStyle ?? "bg-muted-foreground"}`} />
 			{label}
 		</span>
 	);
@@ -32,11 +32,16 @@ const Dashboard = () => {
 	const skeletonRowCount = Math.min(Math.max(limit, 5), 10);
 
 	useEffect(() => {
-		fetchData()
-			.then(() => {})
-			.catch((error) => {
-				toast.error(error.message || "Failed to fetch jobs");
-			});
+		const loadJobs = async () => {
+			try {
+				await fetchData();
+			} catch (error) {
+				const message = error instanceof Error ? error.message : "Failed to fetch jobs";
+				toast.error(message);
+			}
+		};
+
+		void loadJobs();
 	}, [fetchData]);
 
 	const totalPages = Math.max(1, Math.ceil((data?.total ?? 0) / limit));
@@ -66,7 +71,9 @@ const Dashboard = () => {
 								className="bg-transparent outline-none text-foreground placeholder:text-muted-foreground w-40 text-sm"
 							/>
 						</div>
-						<button className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-muted text-muted-foreground transition-colors cursor-pointer">
+						<button
+							aria-label="Open notifications"
+							className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-muted text-muted-foreground transition-colors cursor-pointer">
 							<Bell size={16} />
 						</button>
 					</div>
@@ -176,7 +183,11 @@ const Dashboard = () => {
 													key={job.id}
 													className="border-b border-border last:border-0 hover:bg-muted/40 transition-colors">
 													<td className="pl-5 py-3.5">
-														<input type="checkbox" className="rounded accent-primary" />
+														<input
+															type="checkbox"
+															aria-label={`Select job application for ${job.company} ${job.role}`}
+															className="rounded accent-primary"
+														/>
 													</td>
 													<td className=" py-3.5">
 														<div className="flex items-center gap-3">
