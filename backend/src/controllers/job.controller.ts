@@ -68,8 +68,6 @@ export const getJobs = async (req: AuthRequest, res: Response) => {
 			createdAt: job.createdAt,
 		}));
 
-		console.log(allJobs);
-
 		return res.status(200).json({ allJobs, total });
 	} catch (error) {
 		return res.status(500).json({ message: error instanceof Error ? error.message : "Failed to fetch jobs" });
@@ -80,14 +78,14 @@ export const deleteJob = async (req: AuthRequest, res: Response) => {
 	if (!req.user) {
 		return res.status(401).json({ message: "No token, unauthorized" });
 	}
-	const { id } = req.params;
+	const { id } = req.body;
 
 	try {
 		const result = await Job.findOneAndDelete({ _id: id, createdBy: req.user.userId });
 		if (!result) {
 			return res.status(404).json({ message: "Job not found or you are not the owner" });
 		}
-		return res.status(200).end();
+		return res.status(200).json({ message: "Job deleted successfully" });
 	} catch (error) {
 		return res.status(500).json({ message: error instanceof Error ? error.message : "Failed to delete job" });
 	}

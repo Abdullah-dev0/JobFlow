@@ -1,12 +1,14 @@
-import { ArrowRight, Bell, Briefcase, ChevronDown, ChevronLeft, ChevronRight, Search } from "lucide-react";
+import { ArrowRight, Bell, Briefcase, ChevronDown, ChevronLeft, ChevronRight, Search, Trash2 } from "lucide-react";
 import { useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
+import NoteTooltip from "../components/NoteTooltip";
 import Sidebar from "../components/Sidebar";
 import useFetch from "../hooks/useFetch";
 import type { GetJobsResponse } from "../types/dashboard";
 import { formatDate, getDisplayStatus, getPaginationRange, StatusBadge as getStatusBadgeStyles } from "../utils";
 import { filters, LIMIT } from "../constants";
+import { useMutation } from "../hooks/useMutation";
 
 function StatusBadge({ label }: { label: string }) {
 	const badgeStyles = getStatusBadgeStyles(label);
@@ -37,6 +39,7 @@ const Dashboard = () => {
 	const params = `job/All?${queryParams.toString()}`;
 	const { fetchData, data, loading } = useFetch<GetJobsResponse>(params);
 	const skeletonRowCount = Math.min(Math.max(LIMIT, 5), 10);
+	const { mutate, loading: isLoading } = useMutation<{ message: string }, { id: string }>("/job/delete", "DELETE");
 
 	useEffect(() => {
 		const loadJobs = async () => {
@@ -61,6 +64,16 @@ const Dashboard = () => {
 			nextParams.set("page", String(nextPage));
 			return nextParams;
 		});
+	};
+
+	const deleteJob = async (id: string) => {
+		try {
+			await mutate({ id });
+			toast.success("Job deleted successfully");
+			await fetchData();
+		} catch (error) {
+			toast.error(error instanceof Error ? error.message : "there was Error");
+		}
 	};
 
 	return (
@@ -129,7 +142,7 @@ const Dashboard = () => {
 												return nextParams;
 											});
 										}}
-										className="appearance-none min-w-44 rounded-lg border border-border bg-muted/50 px-3 py-2 pr-9 text-sm font-medium text-foreground shadow-sm outline-none transition-all hover:bg-muted focus:border-primary/60 focus:ring-2 focus:ring-primary/20">
+										className="appearance-none min-w-44 rounded-lg bg-muted/50 px-3 py-2 pr-9 text-sm font-medium text-foreground outline-none transition-all hover:bg-muted border border-border">
 										<option value={ALL_STATUSES}>{ALL_STATUSES}</option>
 										{filters.map((option) => (
 											<option key={option} value={option}>
@@ -160,20 +173,18 @@ const Dashboard = () => {
 											Date Applied
 										</th>
 										<th className="text-left px-3 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-											Date
-										</th>
-										<th className="text-left px-3 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wide">
 											Status
 										</th>
+										<th className="text-left px-3 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+											Notes
+										</th>
+										<th className="w-12 px-3 py-3" />
 									</tr>
 								</thead>
 								<tbody>
 									{loading &&
 										Array.from({ length: skeletonRowCount }).map((_, index) => (
 											<tr key={`skeleton-${index}`} className="border-b border-border last:border-0">
-												<td className="pl-5 py-3.5">
-													<div aria-hidden className="h-4 w-4 rounded bg-muted animate-pulse" />
-												</td>
 												<td className="py-3.5">
 													<div className="flex items-center gap-3">
 														<div aria-hidden className="w-8 h-8 rounded-lg bg-muted animate-pulse shrink-0" />
@@ -190,10 +201,10 @@ const Dashboard = () => {
 													<div aria-hidden className="h-3 w-24 rounded bg-muted animate-pulse" />
 												</td>
 												<td className="px-3 py-3.5">
-													<div aria-hidden className="h-3 w-20 rounded bg-muted animate-pulse" />
+													<div aria-hidden className="h-6 w-24 rounded-full bg-muted animate-pulse" />
 												</td>
 												<td className="px-3 py-3.5">
-													<div aria-hidden className="h-6 w-24 rounded-full bg-muted animate-pulse" />
+													<div aria-hidden className="h-3 w-40 rounded bg-muted animate-pulse" />
 												</td>
 												<td className="px-3 py-3.5">
 													<div aria-hidden className="h-3 w-6 rounded bg-muted animate-pulse" />
@@ -202,7 +213,7 @@ const Dashboard = () => {
 										))}
 									{!loading && data?.allJobs.length === 0 && (
 										<tr>
-											<td colSpan={7} className="px-5 py-10 text-center text-muted-foreground">
+											<td colSpan={6} className="px-5 py-10 text-center text-muted-foreground">
 												No jobs found.
 											</td>
 										</tr>
@@ -214,13 +225,6 @@ const Dashboard = () => {
 												<tr
 													key={job.id}
 													className="border-b border-border last:border-0 hover:bg-muted/40 transition-colors">
-													<td className="pl-5 py-3.5">
-														<input
-															type="checkbox"
-															aria-label={`Select job application for ${job.company} ${job.role}`}
-															className="rounded accent-primary"
-														/>
-													</td>
 													<td className=" py-3.5">
 														<div className="flex items-center gap-3">
 															<div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center text-xs font-bold text-muted-foreground shrink-0">
@@ -236,7 +240,18 @@ const Dashboard = () => {
 													<td className="px-3 py-3.5">
 														<StatusBadge label={display.label} />
 													</td>
-													<td className="px-3 py-3.5">{/* <RowActions /> */}</td>
+													<td className="px-3 py-3.5 text-muted-foreground">
+														<NoteTooltip note={job.notes} />
+													</td>
+													<td className="px-3 py-3.5">
+														<button
+															type="button"
+															onClick={() => deleteJob(job.id)}
+															aria-label={`Delete job application for ${job.company} ${job.role}`}
+															className="inline-flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground transition-colors hover:text-destructive cursor-pointer">
+															<Trash2 color="red" size={16} />
+														</button>
+													</td>
 												</tr>
 											);
 										})}
@@ -248,7 +263,7 @@ const Dashboard = () => {
 						<div className="flex items-center justify-between px-5 py-3.5 border-t border-border">
 							<button
 								onClick={() => setPage(page - 1)}
-								disabled={page === 1 || loading}
+								disabled={page === 1 || loading || isLoading}
 								className="flex items-center gap-1.5 px-3 py-1.5 text-sm text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg transition-colors cursor-pointer disabled:opacity-50 disabled:pointer-events-none">
 								<ChevronLeft size={14} />
 								Previous
@@ -263,6 +278,7 @@ const Dashboard = () => {
 										<button
 											key={item}
 											onClick={() => setPage(item)}
+											disabled={isLoading || loading}
 											className={`w-8 h-8 rounded-lg text-sm font-medium transition-colors cursor-pointer ${
 												item === page
 													? "bg-foreground text-background"
@@ -275,7 +291,7 @@ const Dashboard = () => {
 							</div>
 							<button
 								onClick={() => setPage(page + 1)}
-								disabled={page === totalPages || loading}
+								disabled={page === totalPages || loading || isLoading}
 								className="flex items-center gap-1.5 px-3 py-1.5 text-sm text-foreground bg-muted hover:bg-muted/80 rounded-lg transition-colors cursor-pointer disabled:opacity-50 disabled:pointer-events-none">
 								Next
 								<ArrowRight size={14} />

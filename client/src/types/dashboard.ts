@@ -6,7 +6,7 @@ export interface DashboardJob {
 	role: string;
 	status: JobStatus;
 	dateApplied: string;
-	notes?: string;
+	notes?: string | null;
 	createdAt: string;
 }
 
