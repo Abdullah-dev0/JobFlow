@@ -24,9 +24,8 @@ function StatusBadge({ label }: { label: string }) {
 const Dashboard = () => {
 	const [searchParams, setSearchParams] = useSearchParams();
 	const rawPage = Number(searchParams.get("page") ?? "1");
-	const rawLimit = Number(searchParams.get("limit") ?? "10");
 	const page = Number.isNaN(rawPage) || rawPage < 1 ? 1 : rawPage;
-	const limit = Number.isNaN(rawLimit) || rawLimit < 1 ? 10 : rawLimit;
+	const limit = 10;
 	const params = `job/All?page=${page}&limit=${limit}`;
 	const { fetchData, data, loading } = useFetch<GetJobsResponse>(params);
 	const skeletonRowCount = Math.min(Math.max(limit, 5), 10);
@@ -218,7 +217,7 @@ const Dashboard = () => {
 						{/* Pagination */}
 						<div className="flex items-center justify-between px-5 py-3.5 border-t border-border">
 							<button
-								onClick={() => setSearchParams({ page: String(page - 1), limit: String(limit) })}
+								onClick={() => setSearchParams({ page: String(page - 1) })}
 								disabled={page === 1 || loading}
 								className="flex items-center gap-1.5 px-3 py-1.5 text-sm text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg transition-colors cursor-pointer disabled:opacity-50 disabled:pointer-events-none">
 								<ChevronLeft size={14} />
@@ -233,7 +232,7 @@ const Dashboard = () => {
 									) : (
 										<button
 											key={item}
-											onClick={() => setSearchParams({ page: String(item), limit: String(limit) })}
+											onClick={() => setSearchParams({ page: String(item) })}
 											className={`w-8 h-8 rounded-lg text-sm font-medium transition-colors cursor-pointer ${
 												item === page
 													? "bg-foreground text-background"
@@ -245,7 +244,7 @@ const Dashboard = () => {
 								)}
 							</div>
 							<button
-								onClick={() => setSearchParams({ page: String(page + 1), limit: String(limit) })}
+								onClick={() => setSearchParams({ page: String(page + 1) })}
 								disabled={page === totalPages || loading}
 								className="flex items-center gap-1.5 px-3 py-1.5 text-sm text-foreground bg-muted hover:bg-muted/80 rounded-lg transition-colors cursor-pointer disabled:opacity-50 disabled:pointer-events-none">
 								Next
