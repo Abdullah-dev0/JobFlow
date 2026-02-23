@@ -4,6 +4,7 @@ import About from "./pages/About";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
+import CreateJob from "./pages/CreateJob";
 import ProtectedRoute from "./routes/ProtectedRoute";
 import PublicRoute from "./routes/PublicRoute";
 
@@ -18,6 +19,7 @@ export default function App() {
 			</Route>
 			<Route element={<ProtectedRoute />}>
 				<Route path="/dashboard" element={<Dashboard />} />
+				<Route path="/dashboard/create-job" element={<CreateJob />} />
 			</Route>
 		</Routes>
 	);

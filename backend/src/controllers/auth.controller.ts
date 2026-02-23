@@ -69,3 +69,17 @@ export const singin = async (req: Request, res: Response) => {
 		return res.status(500).json({ message: "Something went wrong while signing in" });
 	}
 };
+
+export const logout = async (_req: Request, res: Response) => {
+	try {
+		res.clearCookie("token", {
+			httpOnly: true,
+			secure: process.env.NODE_ENV === "production",
+			sameSite: "strict",
+		});
+
+		return res.status(200).json({ message: "Logged out successfully" });
+	} catch {
+		return res.status(500).json({ message: "Something went wrong while logging out" });
+	}
+};
