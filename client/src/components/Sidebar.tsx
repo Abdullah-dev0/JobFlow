@@ -83,7 +83,7 @@ export default function Sidebar() {
 					disabled={isLoading}
 					aria-label={isLoading ? "Logging out" : "Log out"}
 					className="inline-flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-sidebar-accent/60 hover:text-sidebar-foreground disabled:cursor-not-allowed disabled:opacity-60">
-					{isLoading ? <LoaderCircle size={18} className="animate-spin" /> : <LogOut size={18} />}
+					{isLoading ? <LoaderCircle size={18} className="animate-spin" /> : <LogOut size={18} color="red" />}
 				</button>
 			</div>
 		</aside>
