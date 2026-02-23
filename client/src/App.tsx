@@ -7,6 +7,7 @@ import Dashboard from "./pages/Dashboard";
 import CreateJob from "./pages/CreateJob";
 import ProtectedRoute from "./routes/ProtectedRoute";
 import PublicRoute from "./routes/PublicRoute";
+import DashboardLayout from "./layouts/dashboardLayout";
 
 export default function App() {
 	return (
@@ -18,8 +19,10 @@ export default function App() {
 				<Route path="/register" element={<Register />} />
 			</Route>
 			<Route element={<ProtectedRoute />}>
-				<Route path="/dashboard" element={<Dashboard />} />
-				<Route path="/dashboard/create-job" element={<CreateJob />} />
+				<Route path="/dashboard" element={<DashboardLayout />}>
+					<Route index element={<Dashboard />} />
+					<Route path="create-job" element={<CreateJob />} />
+				</Route>
 			</Route>
 		</Routes>
 	);

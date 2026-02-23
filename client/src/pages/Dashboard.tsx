@@ -3,7 +3,6 @@ import { useEffect, useRef, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 import NoteTooltip from "../components/NoteTooltip";
-import Sidebar from "../components/Sidebar";
 import useFetch from "../hooks/usefetch";
 import type { GetJobsResponse } from "../types/dashboard";
 import { formatDate, getDisplayStatus, getPaginationRange, StatusBadge as getStatusBadgeStyles } from "../utils";
@@ -101,42 +100,36 @@ const Dashboard = () => {
 	};
 
 	return (
-		<div className="flex h-screen bg-background overflow-hidden">
-			<Sidebar />
-
-			{/* Main content */}
-			<div className="flex-1 flex flex-col overflow-hidden">
-				{/* Top Bar */}
-				<header className="h-12 border-b border-border flex items-center justify-between px-6 bg-background shrink-0">
-					<div className="flex items-center gap-2 text-sm text-muted-foreground">
-						<span className="text-foreground font-medium">Interview Dashboard</span>
-						<ChevronRight size={12} />
-						<span>Applied Jobs</span>
-						<ChevronRight size={12} />
-						<span>Overview</span>
+		<>
+			<header className="h-12 border-b border-border flex items-center justify-between px-6 bg-background shrink-0">
+				<div className="flex items-center gap-2 text-sm text-muted-foreground">
+					<span className="text-foreground font-medium">Interview Dashboard</span>
+					<ChevronRight size={12} />
+					<span>Applied Jobs</span>
+					<ChevronRight size={12} />
+					<span>Overview</span>
+				</div>
+				<div className="flex items-center gap-3">
+					<div className="flex items-center gap-2 bg-muted rounded-lg px-3 py-1.5 text-sm text-muted-foreground">
+						<Search size={14} />
+						<input
+							type="text"
+							placeholder="Search..."
+							value={searchInput}
+							onChange={(event) => handleSearchChange(event.target.value)}
+							className="bg-transparent outline-none text-foreground placeholder:text-muted-foreground w-40 text-sm"
+						/>
 					</div>
-					<div className="flex items-center gap-3">
-						<div className="flex items-center gap-2 bg-muted rounded-lg px-3 py-1.5 text-sm text-muted-foreground">
-							<Search size={14} />
-							<input
-								type="text"
-								placeholder="Search..."
-								value={searchInput}
-								onChange={(event) => handleSearchChange(event.target.value)}
-								className="bg-transparent outline-none text-foreground placeholder:text-muted-foreground w-40 text-sm"
-							/>
-						</div>
-						<button
-							aria-label="Open notifications"
-							className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-muted text-muted-foreground transition-colors cursor-pointer">
-							<Bell size={16} />
-						</button>
-					</div>
-				</header>
+					<button
+						aria-label="Open notifications"
+						className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-muted text-muted-foreground transition-colors cursor-pointer">
+						<Bell size={16} />
+					</button>
+				</div>
+			</header>
 
-				{/* Content */}
-				<main className="flex-1 overflow-y-auto p-6">
-					<h1 className="text-xl font-semibold text-foreground mb-5">Applied Jobs</h1>
+			<main className="flex-1 overflow-y-auto p-6">
+				<h1 className="text-xl font-semibold text-foreground mb-5">Applied Jobs</h1>
 
 					<div className="bg-card border border-border rounded-xl shadow-sm">
 						{/* Card header */}
@@ -316,9 +309,8 @@ const Dashboard = () => {
 							</button>
 						</div>
 					</div>
-				</main>
-			</div>
-		</div>
+			</main>
+		</>
 	);
 };
 
