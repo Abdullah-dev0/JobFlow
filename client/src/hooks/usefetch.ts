@@ -57,5 +57,5 @@ export default function useFetch<TResponse>(url: string) {
 		};
 	}, [fetchData]);
 
-	return { data, loading, error, fetchData, reset };
+	return { data, loading, error, fetchData, reset, setData };
 }
