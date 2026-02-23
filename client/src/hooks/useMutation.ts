@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
 
 type ErrorPayload = {
 	message?: string;
@@ -8,7 +7,6 @@ type ErrorPayload = {
 export function useMutation<TResponse, TBody = unknown>(url: string, method: "POST" | "PUT" | "DELETE" | "PATCH") {
 	const [data, setData] = useState<TResponse | undefined>();
 	const [loading, setLoading] = useState(false);
-	const navigate = useNavigate();
 
 	async function mutate(body?: TBody): Promise<TResponse | undefined> {
 		setLoading(true);
@@ -21,13 +19,6 @@ export function useMutation<TResponse, TBody = unknown>(url: string, method: "PO
 				headers: { "Content-Type": "application/json" },
 				body: body ? JSON.stringify(body) : undefined,
 			});
-
-			if (res.status === 401) {
-				setLoading(false);
-				setData(undefined);
-				navigate("/login", { replace: true });
-				return;
-			}
 
 			if (!res.ok) {
 				const errorPayload: ErrorPayload = await res.json();
