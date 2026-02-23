@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { fetchClient } from "../lib/fetchClient";
 
 type ErrorPayload = {
 	message?: string;
@@ -13,9 +14,8 @@ export function useMutation<TResponse, TBody = unknown>(url: string, method: "PO
 		setData(undefined);
 
 		try {
-			const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}${url}`, {
+			const res = await fetchClient(`${import.meta.env.VITE_BACKEND_URL}${url}`, {
 				method,
-				credentials: "include",
 				headers: { "Content-Type": "application/json" },
 				body: body ? JSON.stringify(body) : undefined,
 			});

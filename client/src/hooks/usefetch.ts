@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { fetchClient } from "../lib/fetchClient";
 
 export default function useFetch<TResponse>(url: string) {
 	const [data, setData] = useState<TResponse | undefined>();
@@ -15,9 +16,8 @@ export default function useFetch<TResponse>(url: string) {
 		setError(null);
 
 		try {
-			const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/${url}`, {
+			const res = await fetchClient(`${import.meta.env.VITE_BACKEND_URL}/${url}`, {
 				method: "GET",
-				credentials: "include",
 				headers: { "Content-Type": "application/json" },
 				signal: controller.signal,
 			});
@@ -42,6 +42,13 @@ export default function useFetch<TResponse>(url: string) {
 		}
 	}, [url]);
 
+	const reset = useCallback(() => {
+		abortControllerRef.current?.abort();
+		setData(undefined);
+		setError(null);
+		setLoading(false);
+	}, []);
+
 	useEffect(() => {
 		fetchData();
 
@@ -50,5 +57,5 @@ export default function useFetch<TResponse>(url: string) {
 		};
 	}, [fetchData]);
 
-	return { data, loading, error, fetchData };
+	return { data, loading, error, fetchData, reset };
 }
