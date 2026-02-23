@@ -1,6 +1,6 @@
 import type { AuthRequest } from "../middleware";
 import User from "../models/user.model";
-import type { Request, Response } from "express";
+import type { Response } from "express";
 
 export const getUser = async (req: AuthRequest, res: Response) => {
 	if (!req.user) {
@@ -11,15 +11,15 @@ export const getUser = async (req: AuthRequest, res: Response) => {
 		const user = await User.findOne({ _id: req.user.userId });
 
 		if (!user) {
-			throw new Error("User not found");
+			return res.status(404).json({ message: "User not found" });
 		}
 
 		return res.status(200).json({
-			userId: user?.id,
+			id: user?.id,
 			email: user?.email,
 			name: user?.name,
 		});
-	} catch (error) {
-		return res.status(500).json({ message: error instanceof Error ? error.message : "Failed to fetch jobs" });
+	} catch {
+		return res.status(500).json({ message: "Failed to fetch user" });
 	}
 };

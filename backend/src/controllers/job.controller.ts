@@ -1,12 +1,16 @@
-import type { Request, Response } from "express";
+import type { Response } from "express";
 import type { AuthRequest } from "../middleware";
 import Job from "../models/job.model";
 
 export const createJob = async (req: AuthRequest, res: Response) => {
-	const { company, role, status, dateApplied, notes } = req.body;
+	const { company, role, status, dateApplied, notes } = req.body ?? {};
 
 	if (!req.user) {
 		return res.status(401).json({ message: "No token, unauthorized" });
+	}
+
+	if (!company || !role) {
+		return res.status(400).json({ message: "Company and role are required." });
 	}
 
 	try {
@@ -20,8 +24,8 @@ export const createJob = async (req: AuthRequest, res: Response) => {
 		});
 
 		return res.status(201).json(job);
-	} catch (error) {
-		res.status(500).json({ message: error instanceof Error ? error.message : "Something went worng while signup" });
+	} catch {
+		return res.status(500).json({ message: "Failed to create job" });
 	}
 };
 
@@ -32,11 +36,18 @@ export const updateJob = async (req: AuthRequest, res: Response) => {
 		return res.status(401).json({ message: "No token, unauthorized" });
 	}
 
+	if (!id) {
+		return res.status(400).json({ message: "Job id is required." });
+	}
+
 	try {
 		const job = await Job.findOneAndUpdate({ _id: id, createdBy: req.user.userId }, req.body, { new: true });
-		return res.status(201).json(job);
-	} catch (error) {
-		res.status(500).json({ message: error instanceof Error ? error.message : "Something went worng while signup" });
+		if (!job) {
+			return res.status(404).json({ message: "Job not found or you are not the owner" });
+		}
+		return res.status(200).json(job);
+	} catch {
+		return res.status(500).json({ message: "Failed to update job" });
 	}
 };
 
@@ -45,8 +56,14 @@ export const getJobs = async (req: AuthRequest, res: Response) => {
 		return res.status(401).json({ message: "No token, unauthorized" });
 	}
 
-	const page = parseInt(req.query.page as string) ?? 1;
-	const limit = parseInt(req.query.limit as string) ?? 10;
+	const rawPage = Number(req.query.page ?? 1);
+	const rawLimit = Number(req.query.limit ?? 10);
+	if (!Number.isFinite(rawPage) || rawPage < 1 || !Number.isFinite(rawLimit) || rawLimit < 1) {
+		return res.status(400).json({ message: "Invalid pagination query values." });
+	}
+
+	const page = Math.floor(rawPage);
+	const limit = Math.floor(rawLimit);
 	const statusFilter = req.query.status as string | undefined;
 
 	const skip = (page - 1) * limit;
@@ -69,8 +86,8 @@ export const getJobs = async (req: AuthRequest, res: Response) => {
 		}));
 
 		return res.status(200).json({ allJobs, total });
-	} catch (error) {
-		return res.status(500).json({ message: error instanceof Error ? error.message : "Failed to fetch jobs" });
+	} catch {
+		return res.status(500).json({ message: "Failed to fetch jobs" });
 	}
 };
 
@@ -78,7 +95,11 @@ export const deleteJob = async (req: AuthRequest, res: Response) => {
 	if (!req.user) {
 		return res.status(401).json({ message: "No token, unauthorized" });
 	}
-	const { id } = req.body;
+	const { id } = req.body ?? {};
+
+	if (!id) {
+		return res.status(400).json({ message: "Job id is required." });
+	}
 
 	try {
 		const result = await Job.findOneAndDelete({ _id: id, createdBy: req.user.userId });
@@ -86,7 +107,7 @@ export const deleteJob = async (req: AuthRequest, res: Response) => {
 			return res.status(404).json({ message: "Job not found or you are not the owner" });
 		}
 		return res.status(200).json({ message: "Job deleted successfully" });
-	} catch (error) {
-		return res.status(500).json({ message: error instanceof Error ? error.message : "Failed to delete job" });
+	} catch {
+		return res.status(500).json({ message: "Failed to delete job" });
 	}
 };

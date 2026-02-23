@@ -3,75 +3,69 @@ import User from "../models/user.model";
 import jwt from "jsonwebtoken";
 
 export const signup = async (req: Request, res: Response) => {
-	const { email, password, name } = req.body;
+	const { email, password, name } = req.body ?? {};
+
+	if (!name || !password || !email) {
+		return res.status(400).json({ message: "Name, email, and password are required." });
+	}
 
 	try {
-		if (!name || !password || !email) {
-			throw new Error("fields should not be empty");
-		}
-
-		// check if there is an email in db or not
 		const user = await User.findOne({ email });
 		if (user) {
-			throw new Error("there was an error while signup");
+			return res.status(409).json({ message: "An account with this email already exists." });
 		}
-		// has password if no user with this email
 		const hashedPassword = await Bun.password.hash(password);
-
-		//save into db
-
 		await User.create({ name, email, password: hashedPassword });
 
-		res.status(201).json({
+		return res.status(201).json({
 			message: "signup successfully",
 		});
-	} catch (error) {
-		res.status(500).json({ message: error instanceof Error ? error.message : "Something went worng while signup" });
+	} catch {
+		return res.status(500).json({ message: "Something went wrong while signing up" });
 	}
 };
 
 export const singin = async (req: Request, res: Response) => {
-	const { email, password } = req.body;
+	const { email, password } = req.body ?? {};
+
+	if (!email || !password) {
+		return res.status(400).json({ message: "Email and password are required." });
+	}
 
 	try {
-		if (!email || !password) {
-			throw new Error("No email or password was given");
-		}
-
 		const user = await User.findOne({ email });
 
 		if (!user) {
-			throw new Error("Incorrect email or password");
+			return res.status(401).json({ message: "Incorrect email or password." });
 		}
-		// check the hashedPassword
+
 		const isMatch = await Bun.password.verify(password, user.password);
 
 		if (!isMatch) {
-			throw new Error("Incorrect email or password");
+			return res.status(401).json({ message: "Incorrect email or password." });
 		}
-		// prepare the jwt
+
+		const JWT_SECRET = process.env.JWT_SECRET;
+		if (!JWT_SECRET) {
+			return res.status(500).json({ message: "Server auth configuration is missing." });
+		}
 
 		const payload = { userId: user.id, email: user.email };
-
-		const JWT_SECRET = process.env.JWT_SECRET || "dev-secret-change-me";
-
 		const token = jwt.sign(payload, JWT_SECRET);
 
-		// sent the jwt
-
 		res.cookie("token", token, {
-			httpOnly: true, // JS in browser CANNOT access it (prevents XSS attacks)
-			secure: process.env.NODE_ENV === "production", // only HTTPS in prod
-			sameSite: "strict", // prevents CSRF attacks
-			maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days in milliseconds
+			httpOnly: true,
+			secure: process.env.NODE_ENV === "production",
+			sameSite: "strict",
+			maxAge: 7 * 24 * 60 * 60 * 1000,
 		});
 
-		res.status(200).json({
+		return res.status(200).json({
 			_id: user._id,
 			name: user.name,
 			email: user.email,
 		});
-	} catch (error) {
-		res.status(500).json({ message: error instanceof Error ? error.message : "Something went worng while signup" });
+	} catch {
+		return res.status(500).json({ message: "Something went wrong while signing in" });
 	}
 };
