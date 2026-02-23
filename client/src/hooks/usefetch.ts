@@ -1,10 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 export default function useFetch<TResponse>(url: string) {
 	const [data, setData] = useState<TResponse | undefined>();
 	const [loading, setLoading] = useState(false);
-	const [error, setError] = useState<Error | null>(null);
+	const [error, setError] = useState<string | null>(null);
 	const abortControllerRef = useRef<AbortController | null>(null);
+	const navigate = useNavigate();
 
 	const fetchData = useCallback(async (): Promise<TResponse | undefined> => {
 		abortControllerRef.current?.abort();
@@ -22,31 +24,35 @@ export default function useFetch<TResponse>(url: string) {
 				signal: controller.signal,
 			});
 
-			const result = await res.json().catch(() => ({}));
+			if (res.status === 401) {
+				setData(undefined);
+				setError(null);
+				navigate("/login", { replace: true });
+				return;
+			}
+
+			const contentType = res.headers.get("content-type") ?? "";
+			const result = contentType.includes("application/json") ? await res.json().catch(() => null) : null;
 
 			if (!res.ok) {
-				throw new Error(result?.message || `Request failed (${res.status})`);
+				throw new Error((result as { message?: string } | null)?.message || "there was an error");
 			}
 
 			setData(result);
 			return result;
 		} catch (err) {
-			// Ignore abort errors — they're intentional, not real failures
 			if (err instanceof DOMException && err.name === "AbortError") return;
-
-			const errorObj = err instanceof Error ? err : new Error(String(err));
+			const errorObj = err instanceof Error ? err.message : "there was an error";
 			setError(errorObj);
-			throw errorObj;
 		} finally {
 			if (!controller.signal.aborted) {
 				setLoading(false);
 			}
 		}
-	}, [url]);
+	}, [navigate, url]);
 
-	// Auto-fetch whenever the URL changes + cleanup on unmount
 	useEffect(() => {
-		fetchData().catch(() => {});
+		fetchData();
 
 		return () => {
 			abortControllerRef.current?.abort();

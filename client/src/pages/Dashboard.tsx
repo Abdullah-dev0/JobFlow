@@ -4,7 +4,7 @@ import { useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 import NoteTooltip from "../components/NoteTooltip";
 import Sidebar from "../components/Sidebar";
-import useFetch from "../hooks/useFetch";
+import useFetch from "../hooks/usefetch";
 import type { GetJobsResponse } from "../types/dashboard";
 import { formatDate, getDisplayStatus, getPaginationRange, StatusBadge as getStatusBadgeStyles } from "../utils";
 import { filters, LIMIT } from "../constants";
@@ -42,7 +42,7 @@ const Dashboard = () => {
 	const { mutate, loading: isDeleting } = useMutation<{ message: string }, { id: string }>("/job/delete", "DELETE");
 
 	useEffect(() => {
-		if (error) toast.error(error.message);
+		if (error) toast.error(error);
 	}, [error]);
 
 	const totalPages = Math.max(1, Math.ceil((data?.total ?? 0) / LIMIT));

@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import useFetch from "../hooks/useFetch";
+import useFetch from "../hooks/usefetch";
 import { AuthContext } from "./authContext";
 import type { User } from "./authTypes";
 
