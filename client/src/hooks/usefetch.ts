@@ -1,17 +1,25 @@
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 export default function useFetch<TResponse>(url: string) {
 	const [data, setData] = useState<TResponse | undefined>();
 	const [loading, setLoading] = useState(false);
+	const [error, setError] = useState<Error | null>(null);
+	const abortControllerRef = useRef<AbortController | null>(null);
 
-	const fetchData = useCallback(async () => {
+	const fetchData = useCallback(async (): Promise<TResponse | undefined> => {
+		abortControllerRef.current?.abort();
+		const controller = new AbortController();
+		abortControllerRef.current = controller;
+
 		setLoading(true);
+		setError(null);
 
 		try {
 			const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/${url}`, {
 				method: "GET",
 				credentials: "include",
 				headers: { "Content-Type": "application/json" },
+				signal: controller.signal,
 			});
 
 			const result = await res.json().catch(() => ({}));
@@ -21,14 +29,29 @@ export default function useFetch<TResponse>(url: string) {
 			}
 
 			setData(result);
-			return result as TResponse;
+			return result;
 		} catch (err) {
+			// Ignore abort errors — they're intentional, not real failures
+			if (err instanceof DOMException && err.name === "AbortError") return;
+
 			const errorObj = err instanceof Error ? err : new Error(String(err));
+			setError(errorObj);
 			throw errorObj;
 		} finally {
-			setLoading(false);
+			if (!controller.signal.aborted) {
+				setLoading(false);
+			}
 		}
 	}, [url]);
 
-	return { data, loading, fetchData };
+	// Auto-fetch whenever the URL changes + cleanup on unmount
+	useEffect(() => {
+		fetchData().catch(() => {});
+
+		return () => {
+			abortControllerRef.current?.abort();
+		};
+	}, [fetchData]);
+
+	return { data, loading, error, fetchData };
 }

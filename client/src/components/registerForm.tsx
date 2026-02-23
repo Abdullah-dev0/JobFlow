@@ -5,16 +5,20 @@ import { toast } from "sonner";
 import { useMutation } from "../hooks/useMutation";
 import Button from "./button";
 import Input from "./input";
+import { useAuth } from "../context/authContext";
+
+interface SignUpResponse {
+	_id: string;
+	name: string;
+	email: string;
+}
 
 export default function RegisterForm() {
+	const { mutate, loading } = useMutation<SignUpResponse>("/auth/signup", "POST");
 	const [showPassword, setShowPassword] = useState(false);
 	const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-	const [name, setName] = useState("");
-	const [email, setEmail] = useState("");
-	const [password, setPassword] = useState("");
-	const [confirmPassword, setConfirmPassword] = useState("");
-	const { mutate, error, loading } = useMutation("auth/signup", "POST");
 	const navigation = useNavigate();
+	const { refetch } = useAuth();
 
 	const handleSubmit = async (e: React.ChangeEvent<HTMLFormElement>) => {
 		e.preventDefault();
@@ -36,9 +40,10 @@ export default function RegisterForm() {
 
 		try {
 			await mutate({ name: String(fullName), email: String(email), password: String(password) });
-			navigation("/", { replace: true });
-		} catch {
-			toast.error(error?.message ?? "there was an error");
+			refetch();
+			navigation("/dashboard", { replace: true });
+		} catch (error) {
+			toast.error(error instanceof Error ? error.message : "There was an error");
 		}
 	};
 
@@ -48,10 +53,8 @@ export default function RegisterForm() {
 				id="name"
 				label="Full name"
 				type="text"
-				value={name}
 				name="fullName"
 				disabled={loading}
-				onChange={(e) => setName(e.target.value)}
 				placeholder="John Doe"
 				required
 				startAdornment={<User className="h-5 w-5" />}
@@ -61,10 +64,8 @@ export default function RegisterForm() {
 				id="email"
 				label="Email"
 				type="email"
-				value={email}
 				name="email"
 				disabled={loading}
-				onChange={(e) => setEmail(e.target.value)}
 				placeholder="name@company.com"
 				required
 				startAdornment={<Mail className="h-5 w-5" />}
@@ -74,10 +75,8 @@ export default function RegisterForm() {
 				id="password"
 				label="Password"
 				type={showPassword ? "text" : "password"}
-				value={password}
 				disabled={loading}
 				name="password"
-				onChange={(e) => setPassword(e.target.value)}
 				placeholder="••••••••"
 				required
 				startAdornment={<Lock className="h-5 w-5" />}
@@ -95,8 +94,6 @@ export default function RegisterForm() {
 				id="confirmPassword"
 				label="Confirm password"
 				type={showConfirmPassword ? "text" : "password"}
-				value={confirmPassword}
-				onChange={(e) => setConfirmPassword(e.target.value)}
 				placeholder="••••••••"
 				required
 				disabled={loading}

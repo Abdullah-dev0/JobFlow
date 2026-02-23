@@ -37,22 +37,13 @@ const Dashboard = () => {
 		...(statusParam ? { status: statusParam } : {}),
 	});
 	const params = `job/All?${queryParams.toString()}`;
-	const { fetchData, data, loading } = useFetch<GetJobsResponse>(params);
+	const { fetchData, data, loading, error } = useFetch<GetJobsResponse>(params);
 	const skeletonRowCount = Math.min(Math.max(LIMIT, 5), 10);
 	const { mutate, loading: isDeleting } = useMutation<{ message: string }, { id: string }>("/job/delete", "DELETE");
 
 	useEffect(() => {
-		const loadJobs = async () => {
-			try {
-				await fetchData();
-			} catch (error) {
-				const message = error instanceof Error ? error.message : "Failed to fetch jobs";
-				toast.error(message);
-			}
-		};
-
-		loadJobs();
-	}, [fetchData]);
+		if (error) toast.error(error.message);
+	}, [error]);
 
 	const totalPages = Math.max(1, Math.ceil((data?.total ?? 0) / LIMIT));
 
@@ -225,7 +216,7 @@ const Dashboard = () => {
 												<tr
 													key={job.id}
 													className="border-b border-border last:border-0 hover:bg-muted/40 transition-colors">
-													<td className=" py-3.5">
+													<td className="px-4 py-3.5">
 														<div className="flex items-center gap-3">
 															<div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center text-xs font-bold text-muted-foreground shrink-0">
 																{job.company.slice(0, 2).toUpperCase()}

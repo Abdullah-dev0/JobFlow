@@ -1,33 +1,23 @@
-import { useEffect, useState, type ReactNode } from "react";
+import type { ReactNode } from "react";
+import useFetch from "../hooks/useFetch";
 import { AuthContext } from "./authContext";
 import type { User } from "./authTypes";
-import useFetch from "../hooks/useFetch";
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-	const [user, setUser] = useState<User | null>(null);
-	const [isLoading, setIsLoading] = useState(true);
-	const { fetchData } = useFetch<User>("user/me");
+	const { loading, data, fetchData } = useFetch<User>("user/me");
 
-	useEffect(() => {
-		fetchData()
-			.then(setUser)
-			.catch(() => setUser(null))
-			.finally(() => setIsLoading(false));
-	}, [fetchData]);
-
-	const logout = () => {
-		setUser(null);
-		setIsLoading(false);
+	const logout = async () => {
+		// fetchData(null);
 	};
 
 	return (
 		<AuthContext.Provider
 			value={{
-				isAuthenticated: !!user,
-				isLoading,
-				user,
-				setUser,
+				isAuthenticated: !!data,
+				isLoading: loading,
+				user: data ?? null,
 				logout,
+				refetch: fetchData,
 			}}>
 			{children}
 		</AuthContext.Provider>

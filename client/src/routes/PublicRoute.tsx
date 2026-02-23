@@ -7,6 +7,8 @@ const PublicRoute = () => {
 
 	if (isLoading) return <FullScreenLoader />;
 
+	console.log(isAuthenticated);
+
 	return isAuthenticated ? <Navigate to="/dashboard" replace /> : <Outlet />;
 };
 

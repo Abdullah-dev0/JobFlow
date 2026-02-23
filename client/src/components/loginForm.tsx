@@ -2,10 +2,10 @@ import { Eye, EyeOff, Lock, Mail } from "lucide-react";
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+import { useAuth } from "../context/authContext";
 import { useMutation } from "../hooks/useMutation";
 import Button from "./button";
 import Input from "./input";
-import { useAuth } from "../context/authContext";
 
 interface SignInResponse {
 	_id: string;
@@ -15,13 +15,9 @@ interface SignInResponse {
 
 export default function LoginForm() {
 	const [showPassword, setShowPassword] = useState(false);
-	const { mutate, loading } = useMutation<SignInResponse>("auth/signin", "POST");
+	const { mutate, loading } = useMutation<SignInResponse>("/auth/signin", "POST");
 	const navigate = useNavigate();
-	const { setUser } = useAuth();
-	const [formData, setFormData] = useState({
-		email: "",
-		password: "",
-	});
+	const { refetch } = useAuth();
 
 	const handleSubmit = async (e: React.ChangeEvent<HTMLFormElement>) => {
 		e.preventDefault();
@@ -35,8 +31,8 @@ export default function LoginForm() {
 			return;
 		}
 		try {
-			const signedInUser = await mutate({ email: String(email), password: String(password) });
-			setUser({ id: signedInUser._id, name: signedInUser.name, email: signedInUser.email });
+			await mutate({ email: String(email), password: String(password) });
+			refetch();
 			navigate("/dashboard", { replace: true });
 		} catch (error) {
 			toast.error(error instanceof Error ? error.message : "There was an error");
@@ -51,8 +47,6 @@ export default function LoginForm() {
 				label="Email"
 				disabled={loading}
 				type="email"
-				value={formData.email}
-				onChange={(e) => setFormData({ ...formData, email: e.target.value })}
 				placeholder="name@company.com"
 				required
 				startAdornment={<Mail className="h-5 w-5" />}
@@ -63,8 +57,6 @@ export default function LoginForm() {
 				name="password"
 				label="Password"
 				type={showPassword ? "text" : "password"}
-				value={formData.password}
-				onChange={(e) => setFormData({ ...formData, password: e.target.value })}
 				placeholder="••••••••"
 				required
 				disabled={loading}

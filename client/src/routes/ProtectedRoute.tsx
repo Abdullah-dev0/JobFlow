@@ -7,6 +7,8 @@ const ProtectedRoute = () => {
 
 	if (isLoading) return <FullScreenLoader />;
 
+	console.log(isAuthenticated);
+
 	return isAuthenticated ? <Outlet /> : <Navigate to="/login" replace />;
 };
 

@@ -8,6 +8,6 @@ export interface AuthContextType {
 	isAuthenticated: boolean;
 	isLoading: boolean;
 	user: User | null;
-	setUser: (user: User | null) => void;
-	logout: () => void;
+	logout: () => Promise<void>;
+	refetch: () => Promise<User | undefined>;
 }
