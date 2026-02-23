@@ -65,11 +65,25 @@ export const getJobs = async (req: AuthRequest, res: Response) => {
 	const page = Math.floor(rawPage);
 	const limit = Math.floor(rawLimit);
 	const statusFilter = req.query.status as string | undefined;
+	const searchFilter = (req.query.search as string | undefined)?.trim();
 
 	const skip = (page - 1) * limit;
 
 	try {
-		const filter = { createdBy: req.user.userId, ...(statusFilter ? { status: statusFilter } : {}) };
+		const filter = {
+			createdBy: req.user.userId,
+			...(statusFilter ? { status: statusFilter } : {}),
+			...(searchFilter
+				? {
+						$or: [
+							{ company: { $regex: searchFilter, $options: "i" } },
+							{ role: { $regex: searchFilter, $options: "i" } },
+							{ notes: { $regex: searchFilter, $options: "i" } },
+						],
+					}
+				: {}),
+		};
+
 		const [jobs, total] = await Promise.all([
 			Job.find(filter).skip(skip).limit(limit).sort({ createdAt: -1 }),
 			Job.countDocuments(filter),

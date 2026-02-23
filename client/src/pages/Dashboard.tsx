@@ -1,5 +1,5 @@
 import { ArrowRight, Bell, Briefcase, ChevronDown, ChevronLeft, ChevronRight, Search, Trash2 } from "lucide-react";
-import { useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 import NoteTooltip from "../components/NoteTooltip";
@@ -31,10 +31,14 @@ const Dashboard = () => {
 	const page = Number.isNaN(rawPage) || rawPage < 1 ? 1 : rawPage;
 	const statusParam = searchParams.get("status");
 	const selectedStatus = statusParam ?? ALL_STATUSES;
+	const search = searchParams.get("search") ?? "";
+	const [searchInput, setSearchInput] = useState(search);
+	const searchDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 	const queryParams = new URLSearchParams({
 		page: String(page),
 		limit: String(LIMIT),
 		...(statusParam ? { status: statusParam } : {}),
+		...(search ? { search } : {}),
 	});
 	const params = `job/All?${queryParams.toString()}`;
 	const { fetchData, data, loading, error } = useFetch<GetJobsResponse>(params);
@@ -45,16 +49,45 @@ const Dashboard = () => {
 		if (error) toast.error(error);
 	}, [error]);
 
+	useEffect(() => {
+		setSearchInput(search);
+	}, [search]);
+
+	useEffect(() => {
+		return () => {
+			if (searchDebounceRef.current) {
+				clearTimeout(searchDebounceRef.current);
+			}
+		};
+	}, []);
+
 	const totalPages = Math.max(1, Math.ceil((data?.total ?? 0) / LIMIT));
 
 	const paginationRange = getPaginationRange(page, totalPages);
 
-	const setPage = (nextPage: number) => {
+	const setParams = (params: string, value: number | string | null, resetPage = false) => {
 		setSearchParams((prevParams) => {
 			const nextParams = new URLSearchParams(prevParams);
-			nextParams.set("page", String(nextPage));
+			if (value === null || String(value).trim().length === 0) {
+				nextParams.delete(params);
+			} else {
+				nextParams.set(params, String(value));
+			}
+
+			if (resetPage) {
+				nextParams.set("page", "1");
+			}
+
 			return nextParams;
 		});
+	};
+
+	const handleSearchChange = (value: string) => {
+		setSearchInput(value);
+		if (searchDebounceRef.current) {
+			clearTimeout(searchDebounceRef.current);
+		}
+		searchDebounceRef.current = setTimeout(() => setParams("search", value, true), 300);
 	};
 
 	const deleteJob = async (id: string) => {
@@ -88,6 +121,8 @@ const Dashboard = () => {
 							<input
 								type="text"
 								placeholder="Search..."
+								value={searchInput}
+								onChange={(event) => handleSearchChange(event.target.value)}
 								className="bg-transparent outline-none text-foreground placeholder:text-muted-foreground w-40 text-sm"
 							/>
 						</div>
@@ -121,18 +156,9 @@ const Dashboard = () => {
 								<div className="relative">
 									<select
 										value={selectedStatus}
-										onChange={(event) => {
-											setSearchParams((prevParams) => {
-												const nextParams = new URLSearchParams(prevParams);
-												if (event.target.value === ALL_STATUSES) {
-													nextParams.delete("status");
-												} else {
-													nextParams.set("status", event.target.value);
-												}
-												nextParams.set("page", "1");
-												return nextParams;
-											});
-										}}
+										onChange={(event) =>
+											setParams("status", event.target.value === ALL_STATUSES ? null : event.target.value, true)
+										}
 										className="appearance-none min-w-44 rounded-lg bg-muted/50 px-3 py-2 pr-9 text-sm font-medium text-foreground outline-none transition-all hover:bg-muted border border-border">
 										<option value={ALL_STATUSES}>{ALL_STATUSES}</option>
 										{filters.map((option) => (
@@ -254,7 +280,7 @@ const Dashboard = () => {
 						{/* Pagination */}
 						<div className="flex items-center justify-between px-5 py-3.5 border-t border-border">
 							<button
-								onClick={() => setPage(page - 1)}
+								onClick={() => setParams("page", page - 1)}
 								disabled={page === 1 || loading}
 								className="flex items-center gap-1.5 px-3 py-1.5 text-sm text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg transition-colors cursor-pointer disabled:opacity-50 disabled:pointer-events-none">
 								<ChevronLeft size={14} />
@@ -269,7 +295,7 @@ const Dashboard = () => {
 									) : (
 										<button
 											key={item}
-											onClick={() => setPage(item)}
+											onClick={() => setParams("page", item)}
 											disabled={loading}
 											className={`w-8 h-8 rounded-lg text-sm font-medium transition-colors cursor-pointer ${
 												item === page
@@ -282,7 +308,7 @@ const Dashboard = () => {
 								)}
 							</div>
 							<button
-								onClick={() => setPage(page + 1)}
+								onClick={() => setParams("page", page + 1)}
 								disabled={page === totalPages || loading}
 								className="flex items-center gap-1.5 px-3 py-1.5 text-sm text-foreground bg-muted hover:bg-muted/80 rounded-lg transition-colors cursor-pointer disabled:opacity-50 disabled:pointer-events-none">
 								Next
