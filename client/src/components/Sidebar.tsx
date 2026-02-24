@@ -61,7 +61,7 @@ export default function Sidebar() {
 					<p className="px-3 mb-1.5 text-[10px] font-semibold tracking-widest uppercase text-muted-foreground">Main</p>
 					<div className="space-y-1.5">
 						<NavItem icon={<LayoutGrid size={16} />} label="Dashboard" to="/dashboard" end />
-						<NavItem icon={<FilePlus2 size={16} />} label="Create Job" to="/dashboard/create-job" />
+						<NavItem icon={<FilePlus2 size={16} />} label="Create Job" to="/dashboard/create" />
 					</div>
 				</div>
 			</nav>

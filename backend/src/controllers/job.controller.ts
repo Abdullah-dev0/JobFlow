@@ -1,4 +1,5 @@
 import type { Response } from "express";
+import { Types } from "mongoose";
 import type { AuthRequest } from "../middleware";
 import Job from "../models/job.model";
 
@@ -85,23 +86,20 @@ export const getJobs = async (req: AuthRequest, res: Response) => {
 		};
 
 		const [jobs, total] = await Promise.all([
-			Job.find(filter).skip(skip).limit(limit).sort({ createdAt: -1 }),
+			Job.find(filter).skip(skip).limit(limit).sort({ createdAt: -1 }).lean(),
 			Job.countDocuments(filter),
 		]);
 
 		const allJobs = jobs.map((job) => ({
+			...job,
 			id: String(job._id),
-			company: job.company,
-			role: job.role,
-			status: job.status,
-			dateApplied: job.dateApplied,
-			notes: job.notes,
-			createdAt: job.createdAt,
 		}));
 
 		return res.status(200).json({ allJobs, total });
-	} catch {
-		return res.status(500).json({ message: "Failed to fetch jobs" });
+	} catch (error) {
+		return res
+			.status(500)
+			.json({ message: "Failed to fetch jobs", error: error instanceof Error ? error.message : "Unknown error" });
 	}
 };
 
@@ -123,5 +121,36 @@ export const deleteJob = async (req: AuthRequest, res: Response) => {
 		return res.status(200).json({ message: "Job deleted successfully" });
 	} catch {
 		return res.status(500).json({ message: "Failed to delete job" });
+	}
+};
+
+export const getJobbyId = async (req: AuthRequest, res: Response) => {
+	if (!req.user) {
+		return res.status(401).json({ message: "No token, unauthorized" });
+	}
+
+	const { id } = req.params;
+
+	if (!id) {
+		return res.status(400).json({ message: "Invalid job id." });
+	}
+
+	try {
+		const job = await Job.findOne({ _id: id, createdBy: req.user.userId }).lean();
+
+		if (!job) {
+			return res.status(404).json({ message: "Job not found or you are not the owner" });
+		}
+
+		const jobWithId = {
+			...job,
+			id: String(job._id),
+		};
+
+		return res.status(200).json(jobWithId);
+	} catch (error) {
+		return res
+			.status(500)
+			.json({ message: "Failed to fetch job", error: error instanceof Error ? error.message : "Unknown error" });
 	}
 };

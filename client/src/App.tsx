@@ -21,7 +21,8 @@ export default function App() {
 			<Route element={<ProtectedRoute />}>
 				<Route path="/dashboard" element={<DashboardLayout />}>
 					<Route index element={<Dashboard />} />
-					<Route path="create-job" element={<CreateJob />} />
+					<Route path="create" element={<CreateJob />} />
+					<Route path="edit/:id" element={<CreateJob />} />
 				</Route>
 			</Route>
 		</Routes>

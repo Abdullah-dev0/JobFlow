@@ -7,10 +7,11 @@ import {
 	FileText,
 	Sparkles,
 } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
 import { filters } from "../constants";
 import { useMutation } from "../hooks/useMutation";
+import useFetch from "../hooks/usefetch";
 
 type JobStatus = (typeof filters)[number];
 
@@ -49,8 +50,20 @@ const getTodayDate = () => {
 const CreateJob = () => {
 	const navigate = useNavigate();
 	const { mutate, loading } = useMutation<CreateJobPayload, CreateJobPayload>("/job/create", "POST");
+	const { id } = useParams(); // get id from /edit/:id
+	const isEditing = Boolean(id);
 
-	const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+	const { data: existingJob, loading: fetchingJob } = useFetch<CreateJobPayload>(isEditing ? `job/${id}` : null);
+
+	if (isEditing && fetchingJob) {
+		return (
+			<div className="flex h-32 items-center justify-center">
+				<span className="text-sm text-muted-foreground">Loading job details...</span>
+			</div>
+		);
+	}
+
+	const handleSubmit = async (event: React.ChangeEvent<HTMLFormElement>) => {
 		event.preventDefault();
 		const formElement = event.currentTarget;
 		const formData = new FormData(formElement);
@@ -125,6 +138,7 @@ const CreateJob = () => {
 												</div>
 												<input
 													required
+													defaultValue={existingJob?.company}
 													name={field.key}
 													placeholder={field.placeholder}
 													className={`${fieldBaseClass} pl-10`}
@@ -143,7 +157,7 @@ const CreateJob = () => {
 										</div>
 										<select
 											name="status"
-											defaultValue={filters[0]}
+											defaultValue={existingJob?.status ?? filters[0]}
 											className={`${fieldBaseClass} pl-10 appearance-none`}
 											disabled={loading}>
 											{filters.map((statusOption) => (
@@ -164,7 +178,7 @@ const CreateJob = () => {
 										<input
 											type="date"
 											name="dateApplied"
-											defaultValue={getTodayDate()}
+											defaultValue={existingJob?.dateApplied ? existingJob.dateApplied.slice(0, 10) : getTodayDate()}
 											className={`${fieldBaseClass} pl-10`}
 											disabled={loading}
 										/>
@@ -180,6 +194,7 @@ const CreateJob = () => {
 									</div>
 									<textarea
 										name="notes"
+										defaultValue={existingJob?.notes}
 										placeholder="Interview rounds, referrals, follow-up dates..."
 										className={`${fieldBaseClass} min-h-44 resize-y pl-10`}
 										disabled={loading}

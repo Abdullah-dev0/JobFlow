@@ -1,6 +1,6 @@
 import type { JobStatus } from "../types/dashboard";
 
-export function getDisplayStatus(status: JobStatus): { label: string } {
+export function getDisplayStatus(status?: JobStatus | string): { label: string } {
 	switch (status) {
 		case "Applied":
 			return { label: "Pending" };
@@ -10,6 +10,8 @@ export function getDisplayStatus(status: JobStatus): { label: string } {
 			return { label: "Shortlisted" };
 		case "Rejected":
 			return { label: "Rejected" };
+		default:
+			return { label: "Pending" };
 	}
 }
 

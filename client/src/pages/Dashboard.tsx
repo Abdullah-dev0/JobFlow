@@ -1,6 +1,16 @@
-import { ArrowRight, Bell, Briefcase, ChevronDown, ChevronLeft, ChevronRight, Search, Trash2 } from "lucide-react";
+import {
+	ArrowRight,
+	Bell,
+	Briefcase,
+	ChevronDown,
+	ChevronLeft,
+	ChevronRight,
+	Edit,
+	Search,
+	Trash2,
+} from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 import NoteTooltip from "../components/NoteTooltip";
 import useFetch from "../hooks/usefetch";
@@ -43,6 +53,8 @@ const Dashboard = () => {
 	const { data, loading, error, setData } = useFetch<GetJobsResponse>(params);
 	const skeletonRowCount = Math.min(Math.max(LIMIT, 5), 10);
 	const { mutate, loading: isDeleting } = useMutation<{ message: string }, { id: string }>("/job/delete", "DELETE");
+	const navigate = useNavigate();
+	const jobs = data?.allJobs ?? [];
 
 	useEffect(() => {
 		if (error) toast.error(error);
@@ -236,7 +248,7 @@ const Dashboard = () => {
 									</tr>
 								)}
 								{!loading &&
-									data?.allJobs.map((job) => {
+									jobs.map((job) => {
 										const display = getDisplayStatus(job.status);
 										return (
 											<tr
@@ -245,7 +257,7 @@ const Dashboard = () => {
 												<td className="px-4 py-3.5">
 													<div className="flex items-center gap-3">
 														<div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center text-xs font-bold text-muted-foreground shrink-0">
-															{job.company.slice(0, 2).toUpperCase()}
+															{job.company ? job.company.slice(0, 2).toUpperCase() : "--"}
 														</div>
 														<div>
 															<p className="font-medium text-foreground">{job.company}</p>
@@ -260,14 +272,22 @@ const Dashboard = () => {
 												<td className="px-3 py-3.5 text-muted-foreground">
 													<NoteTooltip note={job.notes} />
 												</td>
-												<td className="px-3 py-3.5">
+												<td className="px-3 py-3.5 flex items-center justify-end gap-2">
 													<button
 														type="button"
 														disabled={isDeleting}
 														onClick={() => deleteJob(job.id)}
 														aria-label={`Delete job application for ${job.company} ${job.role}`}
-														className="inline-flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground transition-colors hover:text-destructive cursor-pointer disabled:cursor-not-allowed disabled:opacity-50">
+														className="inline-flex h-8 items-center justify-center gap-1.5 rounded-md px-2 text-muted-foreground transition-colors hover:text-destructive cursor-pointer disabled:cursor-not-allowed disabled:opacity-50 w-fit">
 														<Trash2 color="red" size={16} />
+													</button>
+													<button
+														type="button"
+														disabled={isDeleting}
+														onClick={() => navigate(`/dashboard/edit/${job.id}`)}
+														aria-label={`Edit job application for ${job.company} ${job.role}`}
+														className="inline-flex h-8 items-center justify-center gap-1.5 rounded-md px-2 text-muted-foreground transition-colors cursor-pointer disabled:cursor-not-allowed disabled:opacity-50">
+														<Edit size={16} />
 													</button>
 												</td>
 											</tr>

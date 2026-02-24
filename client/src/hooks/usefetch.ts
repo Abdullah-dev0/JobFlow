@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { fetchClient } from "../lib/fetchClient";
 
-export default function useFetch<TResponse>(url: string) {
+export default function useFetch<TResponse>(url: string | null) {
 	const [data, setData] = useState<TResponse | undefined>();
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState<string | null>(null);
@@ -50,12 +50,13 @@ export default function useFetch<TResponse>(url: string) {
 	}, []);
 
 	useEffect(() => {
+		if (!url) return; // ← skip fetch if null or empty url is provided
 		fetchData();
 
 		return () => {
 			abortControllerRef.current?.abort();
 		};
-	}, [fetchData]);
+	}, [fetchData, url]);
 
 	return { data, loading, error, fetchData, reset, setData };
 }
