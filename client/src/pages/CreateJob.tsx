@@ -49,9 +49,12 @@ const getTodayDate = () => {
 
 const CreateJob = () => {
 	const navigate = useNavigate();
-	const { mutate, loading } = useMutation<CreateJobPayload, CreateJobPayload>("/job/create", "POST");
 	const { id } = useParams(); // get id from /edit/:id
 	const isEditing = Boolean(id);
+	const { mutate, loading } = useMutation<CreateJobPayload, CreateJobPayload>(
+		isEditing ? `/job/update/${id}` : "/job/create",
+		isEditing ? "PATCH" : "POST",
+	);
 
 	const { data: existingJob, loading: fetchingJob } = useFetch<CreateJobPayload>(isEditing ? `job/${id}` : null);
 
@@ -90,9 +93,11 @@ const CreateJob = () => {
 
 		try {
 			await mutate(payload);
-			toast.success("Job created successfully.");
-			formElement.reset();
-			navigate("/dashboard", { replace: true });
+			toast.success(isEditing ? "Job updated successfully." : "Job created successfully.");
+			if (!isEditing) {
+				formElement.reset();
+				navigate("/dashboard", { replace: true });
+			}
 		} catch (error) {
 			toast.error(error instanceof Error ? error.message : "Unable to create job.");
 		}
@@ -138,7 +143,7 @@ const CreateJob = () => {
 												</div>
 												<input
 													required
-													defaultValue={existingJob?.company}
+													defaultValue={existingJob?.[field.key]}
 													name={field.key}
 													placeholder={field.placeholder}
 													className={`${fieldBaseClass} pl-10`}
@@ -214,7 +219,7 @@ const CreateJob = () => {
 									type="submit"
 									className="rounded-xl bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground shadow-sm shadow-primary/30 transition-colors hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-70"
 									disabled={loading}>
-									{loading ? "Creating..." : "Create Job"}
+									{loading ? (isEditing ? "Updating..." : "Creating...") : isEditing ? "Update Job" : "Create Job"}
 								</button>
 							</div>
 						</form>

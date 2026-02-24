@@ -3,7 +3,7 @@ import { fetchClient } from "../lib/fetchClient";
 
 export default function useFetch<TResponse>(url: string | null) {
 	const [data, setData] = useState<TResponse | undefined>();
-	const [loading, setLoading] = useState(false);
+	const [loading, setLoading] = useState(Boolean(url));
 	const [error, setError] = useState<string | null>(null);
 	const abortControllerRef = useRef<AbortController | null>(null);
 
@@ -50,7 +50,10 @@ export default function useFetch<TResponse>(url: string | null) {
 	}, []);
 
 	useEffect(() => {
-		if (!url) return; // ← skip fetch if null or empty url is provided
+		if (!url) {
+			setLoading(false);
+			return;
+		}
 		fetchData();
 
 		return () => {
@@ -60,3 +63,4 @@ export default function useFetch<TResponse>(url: string | null) {
 
 	return { data, loading, error, fetchData, reset, setData };
 }
+
