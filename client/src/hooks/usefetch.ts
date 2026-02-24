@@ -54,6 +54,7 @@ export default function useFetch<TResponse>(url: string | null) {
 			setLoading(false);
 			return;
 		}
+
 		fetchData();
 
 		return () => {
@@ -63,4 +64,3 @@ export default function useFetch<TResponse>(url: string | null) {
 
 	return { data, loading, error, fetchData, reset, setData };
 }
-
